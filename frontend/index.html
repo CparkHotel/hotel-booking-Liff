@@ -20,12 +20,49 @@
   </header>
 
   <main class="container">
-    <!-- Menu Page -->
-    <section id="menuPage" class="page active">
-      <div class="welcome card">
-        <h2>Hello! 👋</h2>
-        <p>Welcome to our hotel. What would you like to do today?</p>
+   <!-- Menu Page -->
+<section id="menuPage" class="page active">
+  <div class="welcome card">
+    <h2>Hello! 👋</h2>
+    <p>Welcome to our hotel. What would you like to do today?</p>
+  </div>
+
+  <!-- Room Bed Types Quick Preview -->
+  <div class="card bed-types-preview">
+    <h3 style="margin-bottom: 12px; font-size: 14px; color: #666; text-align: center;">Room Bed Types</h3>
+    <div style="display: flex; justify-content: space-around; text-align: center; gap: 8px;">
+      
+      <!-- Double Room -->
+      <div style="flex: 1; padding: 8px; border: 1px solid #eee; border-radius: 8px; background: #fafafa;">
+        <img src="./Double room.jpg" alt="Double Bed" style="width: 100%; max-width: 60px; height: auto; display: block; margin: 0 auto 6px;">
+        <span style="font-size: 12px; font-weight: bold; display: block;">Double</span>
+        <small style="font-size: 10px; color: #777;">1 Large Bed</small>
       </div>
+
+      <!-- Twin Room -->
+      <div style="flex: 1; padding: 8px; border: 1px solid #eee; border-radius: 8px; background: #fafafa;">
+        <img src="./Twin room.jpg" alt="Twin Bed" style="width: 100%; max-width: 60px; height: auto; display: block; margin: 0 auto 6px;">
+        <span style="font-size: 12px; font-weight: bold; display: block;">Twin</span>
+        <small style="font-size: 10px; color: #777;">2 Single Beds</small>
+      </div>
+
+      <!-- Triple Room -->
+      <div style="flex: 1; padding: 8px; border: 1px solid #eee; border-radius: 8px; background: #fafafa;">
+        <img src="./Triple room.jpg" alt="Triple Bed" style="width: 100%; max-width: 60px; height: auto; display: block; margin: 0 auto 6px;">
+        <span style="font-size: 12px; font-weight: bold; display: block;">Triple</span>
+        <small style="font-size: 10px; color: #777;">1 Double + 1 Single</small>
+      </div>
+
+    </div>
+  </div>
+
+  <button class="menu-card" onclick="showPage('searchPage')">
+    <span class="menu-icon">🛏️</span>
+    <span><b>Search Room</b><small>Find available rooms</small></span>
+    <span>›</span>
+  </button>
+  
+  <!-- ကျန်တဲ့ My Bookings နဲ့ Profile Buttons များ... -->
       <button class="menu-card" onclick="showPage('searchPage')">
         <span class="menu-icon">🛏️</span>
         <span><b>Search Room</b><small>Find available rooms</small></span>
