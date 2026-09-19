@@ -131,7 +131,7 @@ function selectRoom(i) {
       <div class="booking-item">
         <b>${escapeHtml(roomName)}</b>
         ${roomType ? `<div class="muted">Room Type: ${escapeHtml(roomType)}</div>` : ""}
-        <div class="price">${price} MMK / night</div>
+        <div class="price">${price} THB / night</div>
         <div class="muted">${escapeHtml(checkin)} → ${escapeHtml(checkout)}</div>
       </div>`;
     showPage("infoPage");
