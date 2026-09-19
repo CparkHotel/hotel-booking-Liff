@@ -106,7 +106,7 @@ function renderRooms() {
       <div class="grow">
         <b>${escapeHtml(r.room_name || r.roomName || "Room")}</b>
         <div class="muted">${escapeHtml(r.room_type || r.roomType || "")}</div>
-        <div class="price">${Number(r.price_per_night || r.price || 0).toLocaleString()} MMK / night</div>
+        <div class="price">${Number(r.price_per_night || r.price || 0).toLocaleString()} THB / night</div>
       </div>
       <button class="select-btn" onclick="selectRoom(${i})">Select</button>
     </div>`
