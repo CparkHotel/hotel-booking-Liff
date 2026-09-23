@@ -1,84 +1,91 @@
 let calendar = null;
 
 document.addEventListener("DOMContentLoaded", function () {
-  initCalendar();
-  fetchBookings();
+    initCalendar();
+    fetchBookings(true); // ပထမဆုံးအကြိမ် Load လုပ်ချိန်တွင် Loading ပြမည်
+
+    // စက္ကန့် ၁၀ တိုင်း Background တွင် Auto Sync လုပ်မည်
+    setInterval(() => {
+        fetchBookings(false); // Page refresh မဖြစ်ဘဲ background ကနေ update လုပ်မည်
+    }, 10000);
 });
 
 function initCalendar() {
-  const calendarEl = document.getElementById("calendar");
-  if (!calendarEl) return;
+    const calendarEl = document.getElementById("calendar");
+    if (!calendarEl) return;
 
-  calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: "dayGridMonth",
-    headerToolbar: {
-      left: "prev,next today",
-      center: "title",
-      right: "dayGridMonth,timeGridWeek",
-    },
-    events: [],
-    eventClick: function (info) {
-      alert(
-        `Booking Details:\nCustomer: ${info.event.title}\nRoom: ${info.event.extendedProps.room}\nPhone: ${info.event.extendedProps.phone}`
-      );
-    },
-  });
-
-  calendar.render();
-}
-
-async function fetchBookings() {
-  const listEl = document.getElementById("bookingList");
-  if (listEl) listEl.innerHTML = "Loading bookings...";
-
-  try {
-    const response = await fetch(ADMIN_CONFIG.BOOKINGS_WEBHOOK, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
+    calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "dayGridMonth",
+        headerToolbar: {
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,timeGridWeek",
+        },
+        events: [],
+        eventClick: function (info) {
+            alert(
+                `Booking Details: \n Customer: ${info.event.title} \n Room: ${info.event.extendedProps.room} \n Phone: ${info.event.extendedProps.phone}`
+            );
+        },
     });
 
-    const data = await response.json();
-    const bookings = Array.isArray(data) ? data : data.bookings || [];
+    calendar.render();
+}
 
-    // Calendar အတွက် Event Format ပြောင်းလဲခြင်း
-    const events = bookings
-      .map((b) => {
-        const startDate = parseToISODate(b.check_in || b.checkin);
-        let endDate = parseToISODate(b.check_out || b.checkout);
-
-        if (!startDate) return null; // Check-in မရှိပါက ပစ်ပယ်မည်
-
-        // FullCalendar end date exclusive ဖြစ်၍ +1 day ပေါင်းပေးခြင်း
-        if (endDate) {
-          const d = new Date(endDate);
-          d.setDate(d.getDate() + 1);
-          endDate = d.toISOString().split("T")[0];
-        }
-
-        return {
-          id: b.booking_id || b.id,
-          title: `${b.customer_name || "Guest"} (${b.room_name || b.room_id || "Room"})`,
-          start: startDate,
-          end: endDate || startDate,
-          color: b.status === "Confirmed" ? "#28a745" : "#ffc107",
-          extendedProps: {
-            phone: b.phone || "-",
-            room: b.room_name || b.room_id || "-",
-          },
-        };
-      })
-      .filter(Boolean); // null ဖြစ်နေသော event များကို ဖယ်ထုတ်မည်
-
-    if (calendar) {
-      calendar.removeAllEvents();
-      calendar.addEventSource(events);
+async function fetchBookings(isInitial = false) {
+    const listEl = document.getElementById("bookingList");
+    
+    // Initial Load မှာပဲ Loading စာသားပြမည် (Auto-sync ချိန်တွင် မျက်နှာပြင်မလှုပ်အောင်)
+    if (isInitial && listEl) {
+        listEl.innerHTML = "Loading bookings...";
     }
 
-    renderBookingList(bookings);
-  } catch (error) {
-    console.error("Error fetching admin bookings:", error);
-    if (listEl) listEl.innerHTML = "<div class='error'>Failed to load bookings from server.</div>";
-  }
+    try {
+        const response = await fetch(ADMIN_CONFIG.BOOKINGS_WEBHOOK, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        });
+        const data = await response.json();
+        const bookings = Array.isArray(data) ? data : data.bookings || [];
+
+        // Calendar အတွက် Event Format ပြောင်းလဲခြင်း
+        const events = bookings
+            .map((b) => {
+                const startDate = parseToISODate(b.check_in || b.checkin);
+                let endDate = parseToISODate(b.check_out || b.checkout);
+                if (!startDate) return null;
+
+                if (endDate) {
+                    const d = new Date(endDate);
+                    d.setDate(d.getDate() + 1);
+                    endDate = d.toISOString().split("T")[0];
+                }
+                return {
+                    id: b.booking_id || b.id,
+                    title: `${b.customer_name || "Guest"} (${b.room_name || b.room_id || "Room"})`,
+                    start: startDate,
+                    end: endDate || startDate,
+                    color: b.status === "Confirmed" ? "#28a745" : "#ffc107",
+                    extendedProps: {
+                        phone: b.phone || "-",
+                        room: b.room_name || b.room_id || "-",
+                    },
+                };
+            })
+            .filter(Boolean);
+
+        if (calendar) {
+            calendar.removeAllEvents();
+            calendar.addEventSource(events);
+        }
+
+        renderBookingList(bookings);
+    } catch (error) {
+        console.error("Error fetching admin bookings:", error);
+        if (isInitial && listEl) {
+            listEl.innerHTML = "<div class='error'>Failed to load bookings from server.</div>";
+        }
+    }
 }
 
 // Date String များကို YYYY-MM-DD Format သို့ ပြောင်းပေးသော Helper Function
