@@ -1,6 +1,7 @@
 let profile = null;
 let selectedRoom = null;
 let rooms = [];
+let selectedBedType = '';
 
 function $(id) {
   return document.getElementById(id);
@@ -63,6 +64,10 @@ function closeLiff() {
 function getUserId() {
   return profile?.userId || "WEB_TEST_USER";
 }
+function selectBedType(type) {
+  selectedBedType = type;
+  showPage('searchPage');
+}
 
 // ခလုတ်နှိပ်ပါက အလုပ်လုပ်ရန် ပြန်လည်ဖြည့်သွင်းထားသော searchRooms function
 async function searchRooms() {
@@ -81,7 +86,7 @@ async function searchRooms() {
     const r = await fetch(CONFIG.SEARCH_WEBHOOK, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ checkin, checkout, guests }),
+      body: JSON.stringify({ checkin, checkout, guests, bedType: selectedBedType }),
     });
     const data = await r.json();
     rooms = data.rooms || data || [];
