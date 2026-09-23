@@ -52,18 +52,20 @@
 </div>
 
 <!-- Triple Room -->
-<div onclick="selectBedType('Triple')" style="cursor: pointer; flex: 1; padding: 12px 6px; border: 1px solid #e0e0e0; border-radius: 10px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
-  <div style="margin-bottom: 6px; display: flex; justify-content: center; align-items: center; gap: 2px;">
-    <img src="./bed icon.png" alt="Bed Icon" style="width: 18px; height: 32px; object-fit: contain;">
-    <img src="./bed icon.png" alt="Bed Icon" style="width: 18px; height: 32px; object-fit: contain;">
-    <img src="./bed icon.png" alt="Bed Icon" style="width: 18px; height: 32px; object-fit: contain;">
-  </div>
-  <span style="font-size: 12px; font-weight: bold; display: block; color: #333;">Triple</span>
-  <small style="font-size: 10px; color: #777;">3 Single Beds</small>
-</div>
-  
-  <!-- ကျန်တဲ့ My Bookings နဲ့ Profile Buttons များ... -->
-      <button class="menu-card" onclick="showPage('searchPage')">
+      <div onclick="selectBedType('Triple')" style="cursor: pointer; flex: 1; padding: 12px 6px; border: 1px solid #e0e0e0; border-radius: 10px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+        <div style="margin-bottom: 6px; display: flex; justify-content: center; align-items: center; gap: 2px;">
+          <img src="./bed icon.png" alt="Bed Icon" style="width: 18px; height: 32px; object-fit: contain;">
+          <img src="./bed icon.png" alt="Bed Icon" style="width: 18px; height: 32px; object-fit: contain;">
+          <img src="./bed icon.png" alt="Bed Icon" style="width: 18px; height: 32px; object-fit: contain;">
+        </div>
+        <span style="font-size: 12px; font-weight: bold; display: block; color: #333;">Triple</span>
+        <small style="font-size: 10px; color: #777;">3 Single Beds</small>
+      </div>
+    </div> <!-- ဒီ div က flex container ကို ပိတ်တာပါ -->
+  </div> <!-- ဒီ div က card bed-types-preview ကို ပိတ်တာပါ -->
+
+  <!-- ကျန်တဲ့ Buttons များ -->
+  <button class="menu-card" onclick="showPage('searchPage')">
         <span class="menu-icon">🛏️</span>
         <span><b>Search Room</b><small>Find available rooms</small></span>
         <span>›</span>
