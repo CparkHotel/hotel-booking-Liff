@@ -172,7 +172,8 @@ function showConfirm() {
   $("confirmBox").innerHTML = `
     <b>${escapeHtml(selectedRoom.room_name || selectedRoom.roomName || "Room")}</b>
     <p><b>Room Type:</b> ${escapeHtml(selectedRoom.room_type || selectedRoom.roomType || "-")}</p>
-    <p><b>Date:</b> ${$("checkin").value} → ${$("checkout").value}</p> <p><b>Guests:</b> ${$("guests").value}</p>
+    <p><b>Date:</b> ${$("checkin").value} → ${$("checkout").value}</p>
+    <p><b>Guests:</b> ${$("guests").value}</p>
     <p><b>Name:</b> ${escapeHtml($("customerName").value)}</p>
     <p><b>Phone:</b> ${escapeHtml($("phone").value)}</p>
     <p><b>Note:</b> ${escapeHtml($("note").value || "-")}</p>
