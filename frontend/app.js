@@ -151,7 +151,8 @@ function selectRoom(i) {
 }
 
 function showConfirm() {
-  if (!$("customerName").value.trim() \vert{}\vert{} !$("phone").value.trim()) {
+  
+if (!$("customerName").value.trim() || !$("phone").value.trim()) {
     alert("Please enter your name and phone number.");
     return;
   }
