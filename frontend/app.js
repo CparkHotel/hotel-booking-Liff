@@ -68,6 +68,10 @@ function selectBedType(type) {
   selectedBedType = type;
   showPage('searchPage');
 }
+function toggleInvoiceForm() {
+  const needInvoice = $("needInvoice").checked;
+  $("invoiceFields").style.display = needInvoice ? "block" : "none";
+}
 
 // ခလုတ်နှိပ်ပါက အလုပ်လုပ်ရန် ပြန်လည်ဖြည့်သွင်းထားသော searchRooms function
 async function searchRooms() {
@@ -147,10 +151,24 @@ function selectRoom(i) {
 }
 
 function showConfirm() {
-  if (!$("customerName").value.trim() || !$("phone").value.trim()) {
+  if (!$("customerName").value.trim() \vert{}\vert{} !$("phone").value.trim()) {
     alert("Please enter your name and phone number.");
     return;
   }
+
+  const needInvoice = $("needInvoice").checked;
+  let invoiceHtml = "";
+
+  if (needInvoice) {
+    invoiceHtml = `
+      <hr style="margin: 10px 0; border: 0; border-top: 1px solid #ccc;">
+      <p><b>Tax Invoice / Receipt Required</b></p>
+      <p><b>Company/Tax Name:</b> ${escapeHtml($("companyName").value || "-")}</p>
+      <p><b>Tax ID:</b> ${escapeHtml($("taxId").value || "-")}</p>
+      <p><b>Address:</b> ${escapeHtml($("billingAddress").value || "-")}</p>
+    `;
+  }
+
   $("confirmBox").innerHTML = `
     <b>${escapeHtml(selectedRoom.room_name || selectedRoom.roomName || "Room")}</b>
     <p><b>Room Type:</b> ${escapeHtml(selectedRoom.room_type || selectedRoom.roomType || "-")}</p>
@@ -158,14 +176,18 @@ function showConfirm() {
     <p><b>Guests:</b> ${$("guests").value}</p>
     <p><b>Name:</b> ${escapeHtml($("customerName").value)}</p>
     <p><b>Phone:</b> ${escapeHtml($("phone").value)}</p>
-    <p><b>Note:</b> ${escapeHtml($("note").value || "-")}</p>`;
+    <p><b>Note:</b> ${escapeHtml($("note").value || "-")}</p>
+    ${invoiceHtml}`;
+
   showPage("confirmPage");
 }
 
 async function createBooking() {
   if (!selectedRoom) return;
-
   const validRoomId = selectedRoom.room_id || selectedRoom.roomId || selectedRoom.id || selectedRoom.room_name || "ROOM-01";
+
+  const needInvoice = $("needInvoice").checked;
+
   const payload = {
     user_id: getUserId(),
     customer_name: $("customerName").value.trim(),
@@ -177,6 +199,14 @@ async function createBooking() {
     check_out: $("checkout").value,
     guests: Number($("guests").value),
     note: $("note").value.trim(),
+    
+    // Invoice / Receipt အချက်အလက်များ ထည့်သွင်းခြင်း
+    need_invoice: needInvoice,
+    invoice_info: needInvoice ? {
+      company_name: $("companyName").value.trim(),
+      tax_id: $("taxId").value.trim(),
+      billing_address: $("billingAddress").value.trim()
+    } : null
   };
 
   try {
