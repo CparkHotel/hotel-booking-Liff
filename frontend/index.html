@@ -113,7 +113,23 @@
 
         <label for="phone">Phone Number</label>
         <input id="phone" type="tel" placeholder="09xxxxxxxxx" required>
+         <!-- Tax / Invoice Request Option -->
+<div style="margin: 15px 0;">
+  <input type="checkbox" id="needInvoice" onchange="toggleInvoiceForm()">
+  <label for="needInvoice" style="display:inline;">Request Tax Invoice / Receipt?</label>
+</div>
 
+<!-- Invoice Form Fields (Default Hide) -->
+<div id="invoiceFields" style="display: none; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+  <label for="companyName">Company / Tax Name</label>
+  <input id="companyName" type="text" placeholder="Company Name or Full Name">
+
+  <label for="taxId">Tax ID / Id No.</label>
+  <input id="taxId" type="text" placeholder="Tax Registration No.">
+
+  <label for="billingAddress">Billing Address</label>
+  <textarea id="billingAddress" rows="2" placeholder="Full address for invoice"></textarea>
+</div>
         <label for="note">Note (Optional)</label>
         <textarea id="note" rows="3" placeholder="Special request..."></textarea>
 
