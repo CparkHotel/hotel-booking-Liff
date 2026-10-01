@@ -7,13 +7,15 @@ function $(id) {
   return document.getElementById(id);
 }
 
+// 1. LIFF Initialization (LocalStorage ဖြင့် User ID ပျောက်မသွားအောင် သိမ်းဆည်းပေးသည်)
 async function init() {
   try {
-    if (CONFIG.LIFF_ID) {
-      await liff.init({ liffId: CONFIG.LIFF_ID });
+    const liffId = (typeof CONFIG !== 'undefined' && CONFIG.LIFF_ID) ? CONFIG.LIFF_ID : "";
+
+    if (liffId && typeof liff !== 'undefined') {
+      await liff.init({ liffId: liffId });
       if (liff.isLoggedIn()) {
         profile = await liff.getProfile();
-        // 🟢 User ID ကို LocalStorage ထဲတွင် အမြဲ သိမ်းဆည်းပေးခြင်း (Page ပြန်ဖွင့်လျှင် မပျောက်စေရန်)
         if (profile && profile.userId) {
           localStorage.setItem("line_user_id", profile.userId);
         }
@@ -32,15 +34,17 @@ init();
 function setDateLimits() {
   const today = new Date();
   const iso = today.toISOString().split("T")[0];
-  $("checkin").min = iso;
-  $("checkout").min = iso;
+  if ($("checkin")) $("checkin").min = iso;
+  if ($("checkout")) $("checkout").min = iso;
 
-  $("checkin").addEventListener("change", () => {
-    $("checkout").min = $("checkin").value;
-    if ($("checkout").value && $("checkout").value <= $("checkin").value) {
-      $("checkout").value = "";
-    }
-  });
+  if ($("checkin") && $("checkout")) {
+    $("checkin").addEventListener("change", () => {
+      $("checkout").min = $("checkin").value;
+      if ($("checkout").value && $("checkout").value <= $("checkin").value) {
+        $("checkout").value = "";
+      }
+    });
+  }
 }
 
 function showPage(id) {
@@ -65,7 +69,7 @@ function closeLiff() {
   if (window.liff && liff.isInClient()) liff.closeWindow();
 }
 
-// 🟢 LocalStorage ထဲမှ ID ကိုပါ ပြန်ယူနိုင်အောင် ပြင်ဆင်ထားသော getUserId()
+// 🟢 LocalStorage မှပါ LINE User ID ကို ရှာဖွေပေးမည်
 function getUserId() {
   return profile?.userId || localStorage.getItem("line_user_id") || "WEB_TEST_USER";
 }
@@ -77,7 +81,9 @@ function selectBedType(type) {
 
 function toggleInvoiceForm() {
   const needInvoice = $("needInvoice").checked;
-  $("invoiceFields").style.display = needInvoice ? "block" : "none";
+  if ($("invoiceFields")) {
+    $("invoiceFields").style.display = needInvoice ? "block" : "none";
+  }
 }
 
 async function searchRooms() {
@@ -93,7 +99,11 @@ async function searchRooms() {
   $("rooms").innerHTML = "<div class='card'>Searching available rooms...</div>";
 
   try {
-    const r = await fetch(CONFIG.SEARCH_WEBHOOK, {
+    const searchUrl = (typeof CONFIG !== 'undefined' && CONFIG.SEARCH_WEBHOOK) 
+      ? CONFIG.SEARCH_WEBHOOK 
+      : "https://sage-loon.pikapod.net/webhook/cpark-search";
+
+    const r = await fetch(searchUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ checkin, checkout, guests, bedType: selectedBedType }),
@@ -197,7 +207,7 @@ async function createBooking() {
   const taxIdVal = $("taxId") ? $("taxId").value.trim() : "";
   const addressVal = $("billingAddress") ? $("billingAddress").value.trim() : "";
 
-  // 🟢 n8n Code Node မျှော်လင့်ထားသော Payload Format အတိုင်း အပြည့်အစုံ ပို့ပေးခြင်း
+  // 🟢 Webhook ထံ သို့ Payload ပို့ပေးခြင်း (n8n ဘက်မှ Auto-fill အလုပ်လုပ်အောင် user_id မပါမဖြစ် ပို့ပါသည်)
   const payload = {
     user_id: getUserId(),
     customer_name: $("customerName").value.trim(),
@@ -224,7 +234,11 @@ async function createBooking() {
   };
 
   try {
-    const r = await fetch(CONFIG.BOOKING_WEBHOOK, {
+    const bookingUrl = (typeof CONFIG !== 'undefined' && CONFIG.BOOKING_WEBHOOK) 
+      ? CONFIG.BOOKING_WEBHOOK 
+      : "https://sage-loon.pikapod.net/webhook/cpark-booking";
+
+    const r = await fetch(bookingUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -237,14 +251,18 @@ async function createBooking() {
     $("bookingIdResult").innerHTML = `<p><b>Booking ID: ${escapeHtml(data.booking_id || "")}</b></p><p class="muted">Please wait for confirmation.</p>`;
     showPage("successPage");
   } catch (e) {
-    alert("Booking failed. Please check n8n.");
+    alert("Booking failed. Please check connection.");
   }
 }
 
 async function loadBookings() {
   $("myBookings").innerHTML = "<div class='card'>Loading...</div>";
   try {
-    const r = await fetch(CONFIG.MY_BOOKINGS_WEBHOOK, {
+    const myBookingsUrl = (typeof CONFIG !== 'undefined' && CONFIG.MY_BOOKINGS_WEBHOOK) 
+      ? CONFIG.MY_BOOKINGS_WEBHOOK 
+      : "https://sage-loon.pikapod.net/webhook/cpark-my-bookings";
+
+    const r = await fetch(myBookingsUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ user_id: getUserId() }),
