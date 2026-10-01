@@ -7,7 +7,7 @@ function $(id) {
   return document.getElementById(id);
 }
 
-// 1. LIFF Init & Safe Storage
+// 1. LIFF Init & Auto Load Bookings
 async function init() {
   try {
     const liffId = (typeof CONFIG !== 'undefined' && CONFIG.LIFF_ID) ? CONFIG.LIFF_ID : "";
@@ -28,9 +28,11 @@ async function init() {
     console.error("LIFF Init Error:", e);
   }
   setDateLimits();
+  
+  // 🟢 App စဖွင့်တာနဲ့ Home Page ပေါ်မှာ Booking စာရင်း တန်းဖတ်ပေးမည်
+  loadBookings();
 }
 
-// Global Event Listener မသုံးဘဲ Direct Init
 window.addEventListener("DOMContentLoaded", () => {
   init();
 });
@@ -57,12 +59,10 @@ function showPage(id) {
       p.classList.remove("active");
     });
     const page = $(id);
-    if (!page) {
-      console.error("Page not found:", id);
-      return;
+    if (page) {
+      page.classList.add("active");
+      window.scrollTo(0, 0);
     }
-    page.classList.add("active");
-    window.scrollTo(0, 0);
   } catch (error) {
     console.error("SHOW PAGE ERROR:", error);
   }
@@ -166,14 +166,12 @@ function selectRoom(i) {
 }
 
 function showConfirm() {
-  // Input Element များရှိမရှိ စစ်ဆေးပြီး Values များ ယူခြင်း
   const nameEl = document.getElementById("customerName");
   const phoneEl = document.getElementById("phone");
 
   const nameVal = nameEl ? nameEl.value.trim() : "";
   const phoneVal = phoneEl ? phoneEl.value.trim() : "";
 
-  // Value မရှိပါက ရှင်းလင်းစွာ alert ပြရန်
   if (!nameVal || !phoneVal) {
     alert("Please enter your name and phone number.");
     return;
@@ -276,10 +274,7 @@ async function createBooking() {
   };
 
   try {
-    const bookingUrl = (typeof CONFIG !== 'undefined' && CONFIG.BOOKING_WEBHOOK) 
-      ? CONFIG.BOOKING_WEBHOOK 
-      : "https://sage-loon.pikapod.net/webhook/cpark-booking";
-
+    const bookingUrl = CONFIG.BOOKING_WEBHOOK;
     const r = await fetch(bookingUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -294,6 +289,9 @@ async function createBooking() {
     if (resultBox) {
       resultBox.innerHTML = `<p><b>Booking ID: ${escapeHtml(data.booking_id || "")}</b></p><p class="muted">Please wait for confirmation.</p>`;
     }
+    
+    // Booking တင်ပြီးပါက My Bookings စာရင်းကို အလိုအလျောက် Update ပြန်လုပ်ပေးမည်
+    loadBookings();
     showPage("successPage");
   } catch (e) {
     console.error("BOOKING ERROR:", e);
@@ -302,7 +300,10 @@ async function createBooking() {
 }
 
 async function loadBookings() {
-  $("myBookings").innerHTML = "<div class='card'>Loading...</div>";
+  const container = $("myBookings");
+  if (!container) return;
+
+  container.innerHTML = "<div class='card'>Loading your bookings...</div>";
   try {
     const r = await fetch(CONFIG.MY_BOOKINGS_WEBHOOK, {
       method: "POST",
@@ -311,31 +312,25 @@ async function loadBookings() {
     });
     const data = await r.json();
     const list = data.bookings || [];
-    $("myBookings").innerHTML = list.length
+    container.innerHTML = list.length
       ? list
           .map(
             (b) => `
-        <div class="booking-item">
+        <div class="booking-item" style="background: #ffffff; padding: 12px; border-radius: 10px; border: 1px solid #e0e0e0; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
           <b>${escapeHtml(b.room_name || "Room")}</b>
           <div class="muted">Room Type: ${escapeHtml(b.room_type || "-")}</div>
-          <div>${escapeHtml(b.check_in)} → ${escapeHtml(b.check_out)}</div>
-          <div>Guests: ${escapeHtml(String(b.guests || ""))}</div>
-          <p><span class="status">${escapeHtml(b.status || "Pending")}</span></p>
-          <div class="muted">Booking ID: ${escapeHtml(b.booking_id || "")}</div>
+          <div><b>Date:</b> ${escapeHtml(b.check_in)} → ${escapeHtml(b.check_out)}</div>
+          <div><b>Guests:</b> ${escapeHtml(String(b.guests || ""))}</div>
+          <p><span class="status" style="background: #e3f2fd; color: #1976d2; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">${escapeHtml(b.status || "Pending")}</span></p>
+          <div class="muted" style="font-size: 11px;">Booking ID: ${escapeHtml(b.booking_id || "")}</div>
         </div>`
           )
           .join("")
       : "<div class='card'>No bookings found.</div>";
   } catch (e) {
     console.error("LOAD BOOKINGS ERROR:", e);
-    $("myBookings").innerHTML = "<div class='error'>Could not load bookings.</div>";
+    container.innerHTML = "<div class='error'>Could not load bookings.</div>";
   }
-}
-
-function loadProfile() {
-  $("profile").innerHTML = profile
-    ? `<p><b>Name:</b> ${escapeHtml(profile.displayName)}</p><p><b>LINE User ID:</b> ${escapeHtml(profile.userId)}</p>`
-    : `<p><b>LINE User ID:</b> ${escapeHtml(getUserId())}</p>`;
 }
 
 function escapeHtml(v) {
