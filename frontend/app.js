@@ -1,90 +1,95 @@
 // Global State Variables
-let currentLiffUserId = "";
-let selectedRoom = null;
-let currentStep = 1;
+let currentLiffUserId = localStorage.getItem("line_user_id") || "";
 
-// 1. LIFF Initialization & User ID Persistence
+// 1. LIFF Initialization (config.js မှ LIFF_ID ကို ယူသုံးထားပါသည်)
 document.addEventListener("DOMContentLoaded", async () => {
-  try {
-    // ⚠️ Replace 'YOUR_LIFF_ID' with your actual LIFF ID if needed
-    if (typeof liff !== "undefined") {
-     await liff.init({ liffId: "2011476453-A8K9qAG9" });
+  // config.js ထဲရှိ CONFIG.LIFF_ID သို့မဟုတ် LIFF_ID ကို ယူခြင်း
+  const liffId = (typeof CONFIG !== "undefined" && CONFIG.LIFF_ID) 
+                 ? CONFIG.LIFF_ID 
+                 : (typeof LIFF_ID !== "undefined" ? LIFF_ID : "");
+
+  if (typeof liff !== "undefined" && liffId) {
+    try {
+      await liff.init({ liffId: liffId });
       if (liff.isLoggedIn()) {
         const profile = await liff.getProfile();
         currentLiffUserId = profile.userId;
         
-        // LocalStorage ထဲတွင် User ID ကို အမြဲတမ်း သိမ်းဆည်းထားခြင်း
+        // LocalStorage ထဲသို့ User ID ကို အမြဲတမ်း သိမ်းထားခြင်း
         localStorage.setItem("line_user_id", currentLiffUserId);
         console.log("LIFF User ID Saved:", currentLiffUserId);
       } else {
         liff.login();
       }
-    } else {
-      // LocalStorage မှ ID ကို ပြန်ယူခြင်း (LIFF အပြင်ဘက် Test လုပ်ချိန်အတွက်)
-      currentLiffUserId = localStorage.getItem("line_user_id") || "WEB_TEST_USER";
+    } catch (err) {
+      console.error("LIFF Init Error:", err);
     }
-  } catch (error) {
-    console.error("LIFF Init Error:", error);
-    currentLiffUserId = localStorage.getItem("line_user_id") || "WEB_TEST_USER";
+  } else {
+    console.warn("LIFF ID or LIFF SDK not found. Using cached User ID.");
   }
 
-  // Initial Setup
+  // Event Listeners စတင်ခြင်း
   initEventListeners();
 });
 
 // 2. Event Listeners Setup
 function initEventListeners() {
   const needInvoiceCheckbox = document.getElementById("need_invoice");
-  if (needInvoiceCheckbox) {
+  const invoiceFields = document.getElementById("invoice_fields");
+
+  if (needInvoiceCheckbox && invoiceFields) {
     needInvoiceCheckbox.addEventListener("change", (e) => {
-      const invoiceFields = document.getElementById("invoice_fields");
-      if (invoiceFields) {
-        invoiceFields.style.display = e.target.checked ? "block" : "none";
-      }
+      invoiceFields.style.display = e.target.checked ? "block" : "none";
     });
   }
 
   const bookingForm = document.getElementById("booking_form") || document.querySelector("form");
   if (bookingForm) {
     bookingForm.addEventListener("submit", handleBookingSubmit);
+  } else {
+    const submitBtn = document.getElementById("submit_btn") || document.querySelector("button[type='submit']");
+    if (submitBtn) {
+      submitBtn.addEventListener("click", handleBookingSubmit);
+    }
   }
 }
 
 // 3. Form Submit Handler (Webhook Call)
 async function handleBookingSubmit(event) {
-  event.preventDefault();
+  if (event) event.preventDefault();
 
-  // LocalStorage မှ User ID ကို ပြန်ဆွဲထုတ်ခြင်း (Page ပြန်ဖွင့်လျှင်လည်း ID မပျောက်ပါ)
+  // LocalStorage မှ User ID ကို ပြန်ယူခြင်း (Page ပြန်ဖွင့်လျှင်လည်း မပျောက်ပါ)
   const userIdToSend = currentLiffUserId || localStorage.getItem("line_user_id") || "WEB_TEST_USER";
+  const needInvoiceEl = document.getElementById("need_invoice");
+  const needInvoice = needInvoiceEl ? needInvoiceEl.checked : false;
 
-  const needInvoice = document.getElementById("need_invoice") ? document.getElementById("need_invoice").checked : false;
-
-  // Webhook ထံ ပို့မည့် Payload Data
   const bookingData = {
-    user_id: userIdToSend, // 🟢 user_id ကို မပါမဖြစ် ထည့်သွင်းထားသည်
-    customer_name: getValueById("customer_name"),
-    phone: getValueById("phone"),
-    room_id: getValueById("room_id") || (selectedRoom ? selectedRoom.id : "-"),
-    room_name: getValueById("room_name") || (selectedRoom ? selectedRoom.name : "-"),
-    room_type: getValueById("room_type") || (selectedRoom ? selectedRoom.type : "-"),
-    check_in: getValueById("check_in"),
-    check_out: getValueById("check_out"),
-    guests: getValueById("guests"),
-    price: getValueById("price") || (selectedRoom ? selectedRoom.price : "-"),
-    note: getValueById("note"),
+    user_id: userIdToSend,
+    customer_name: getValueById("customer_name") || getValueById("name"),
+    phone: getValueById("phone") || getValueById("tel"),
+    room_id: getValueById("room_id") || "ROOM_01",
+    room_name: getValueById("room_name") || "-",
+    room_type: getValueById("room_type") || "-",
+    check_in: getValueById("check_in") || getValueById("checkin"),
+    check_out: getValueById("check_out") || getValueById("checkout"),
+    guests: getValueById("guests") || "1",
+    price: getValueById("price") || "-",
+    note: getValueById("note") || "-",
     need_invoice: needInvoice,
-    
-    // User ရိုက်ထည့်ထားသည့် Invoice အချက်အလက်များ (မရိုက်ပါက အလွတ်ဖြစ်မည်)
-    company_name: needInvoice ? getValueById("company_name") : "",
-    tax_id: needInvoice ? getValueById("tax_id") : "",
-    billing_address: needInvoice ? getValueById("billing_address") : ""
+    company_name: needInvoice ? (getValueById("company_name") || getValueById("company")) : "",
+    tax_id: needInvoice ? (getValueById("tax_id") || getValueById("tax")) : "",
+    billing_address: needInvoice ? (getValueById("billing_address") || getValueById("address")) : ""
   };
+
+  // Webhook URL ကို config.js မှယူမည် သို့မဟုတ် Default URL သုံးမည်
+  const webhookUrl = (typeof CONFIG !== "undefined" && CONFIG.WEBHOOK_URL) 
+    ? CONFIG.WEBHOOK_URL 
+    : "https://sage-loon.pikapod.net/webhook/cpark-booking";
 
   try {
     showLoading(true);
     
-    // ⚠️ Replace with your actual n8n Webhook URL
-    const response = await fetch("https://sage-loon.pikapod.net/webhook/cpark-booking", {
+    const response = await fetch(webhookUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -96,7 +101,7 @@ async function handleBookingSubmit(event) {
     showLoading(false);
 
     if (result.success) {
-      alert("Booking submitted successfully! Booking ID: " + (result.booking_id || ""));
+      alert("Booking Successful! ID: " + (result.booking_id || ""));
       if (typeof liff !== "undefined" && liff.isInClient()) {
         liff.closeWindow();
       }
@@ -106,7 +111,7 @@ async function handleBookingSubmit(event) {
   } catch (error) {
     showLoading(false);
     console.error("Booking Submission Error:", error);
-    alert("Error submitting booking. Please try again.");
+    alert("Error submitting booking. Please check connection.");
   }
 }
 
@@ -117,7 +122,7 @@ function getValueById(id) {
 }
 
 function showLoading(isLoading) {
-  const loader = document.getElementById("loading_spinner");
+  const loader = document.getElementById("loading_spinner") || document.getElementById("loader");
   if (loader) {
     loader.style.display = isLoading ? "block" : "none";
   }
