@@ -166,26 +166,31 @@ function selectRoom(i) {
 }
 
 function showConfirm() {
-  // Input Element များမှ value ကို သေချာစွာ ယူခြင်း
-  const nameInput = $("customerName");
-  const phoneInput = $("phone");
+  // Input Element များရှိမရှိ စစ်ဆေးပြီး Values များ ယူခြင်း
+  const nameEl = document.getElementById("customerName");
+  const phoneEl = document.getElementById("phone");
 
-  const nameVal = nameInput ? nameInput.value.trim() : "";
-  const phoneVal = phoneInput ? phoneInput.value.trim() : "";
+  const nameVal = nameEl ? nameEl.value.trim() : "";
+  const phoneVal = phoneEl ? phoneEl.value.trim() : "";
 
-  // အမည် သို့မဟုတ် ဖုန်းနံပါတ် မရှိပါက အသိပေးရန်
+  // Value မရှိပါက ရှင်းလင်းစွာ alert ပြရန်
   if (!nameVal || !phoneVal) {
     alert("Please enter your name and phone number.");
     return;
   }
 
-  const needInvoice = $("needInvoice") ? $("needInvoice").checked : false;
+  const needInvoiceEl = document.getElementById("needInvoice");
+  const needInvoice = needInvoiceEl ? needInvoiceEl.checked : false;
   let invoiceHtml = "";
 
   if (needInvoice) {
-    const compVal = $("companyName") ? $("companyName").value : "-";
-    const taxVal = $("taxId") ? $("taxId").value : "-";
-    const addrVal = $("billingAddress") ? $("billingAddress").value : "-";
+    const compEl = document.getElementById("companyName");
+    const taxEl = document.getElementById("taxId");
+    const addrEl = document.getElementById("billingAddress");
+
+    const compVal = compEl ? compEl.value.trim() : "-";
+    const taxVal = taxEl ? taxEl.value.trim() : "-";
+    const addrVal = addrEl ? addrEl.value.trim() : "-";
 
     invoiceHtml = `
       <hr style="margin: 10px 0; border: 0; border-top: 1px solid #ccc;">
@@ -199,15 +204,23 @@ function showConfirm() {
   const roomName = selectedRoom ? (selectedRoom.room_name || selectedRoom.roomName || "Room") : "Room";
   const roomType = selectedRoom ? (selectedRoom.room_type || selectedRoom.roomType || "-") : "-";
 
-  $("confirmBox").innerHTML = `
-    <b>${escapeHtml(roomName)}</b>
-    <p><b>Room Type:</b> ${escapeHtml(roomType)}</p>
-    <p><b>Date:</b> ${$("checkin") ? $("checkin").value : ""} → ${$("checkout") ? $("checkout").value : ""}</p>
-    <p><b>Guests:</b> ${$("guests") ? $("guests").value : ""}</p>
-    <p><b>Name:</b> ${escapeHtml(nameVal)}</p>
-    <p><b>Phone:</b> ${escapeHtml(phoneVal)}</p>
-    <p><b>Note:</b> ${escapeHtml($("note") ? $("note").value : "-")}</p>
-    ${invoiceHtml}`;
+  const checkinEl = document.getElementById("checkin");
+  const checkoutEl = document.getElementById("checkout");
+  const guestsEl = document.getElementById("guests");
+  const noteEl = document.getElementById("note");
+
+  const confirmBox = document.getElementById("confirmBox");
+  if (confirmBox) {
+    confirmBox.innerHTML = `
+      <b>${escapeHtml(roomName)}</b>
+      <p><b>Room Type:</b> ${escapeHtml(roomType)}</p>
+      <p><b>Date:</b> ${checkinEl ? checkinEl.value : ""} → ${checkoutEl ? checkoutEl.value : ""}</p>
+      <p><b>Guests:</b> ${guestsEl ? guestsEl.value : ""}</p>
+      <p><b>Name:</b> ${escapeHtml(nameVal)}</p>
+      <p><b>Phone:</b> ${escapeHtml(phoneVal)}</p>
+      <p><b>Note:</b> ${escapeHtml(noteEl ? noteEl.value : "-")}</p>
+      ${invoiceHtml}`;
+  }
 
   showPage("confirmPage");
 }
@@ -217,24 +230,37 @@ async function createBooking() {
     alert("No room selected!");
     return;
   }
-  
+
+  const nameEl = document.getElementById("customerName");
+  const phoneEl = document.getElementById("phone");
+  const checkinEl = document.getElementById("checkin");
+  const checkoutEl = document.getElementById("checkout");
+  const guestsEl = document.getElementById("guests");
+  const noteEl = document.getElementById("note");
+
   const validRoomId = selectedRoom.room_id || selectedRoom.roomId || selectedRoom.id || selectedRoom.room_name || "ROOM-01";
-  const needInvoice = $("needInvoice") ? $("needInvoice").checked : false;
-  const compName = $("companyName") ? $("companyName").value.trim() : "";
-  const taxIdVal = $("taxId") ? $("taxId").value.trim() : "";
-  const addressVal = $("billingAddress") ? $("billingAddress").value.trim() : "";
+  const needInvoiceEl = document.getElementById("needInvoice");
+  const needInvoice = needInvoiceEl ? needInvoiceEl.checked : false;
+
+  const compEl = document.getElementById("companyName");
+  const taxEl = document.getElementById("taxId");
+  const addrEl = document.getElementById("billingAddress");
+
+  const compName = compEl ? compEl.value.trim() : "";
+  const taxIdVal = taxEl ? taxEl.value.trim() : "";
+  const addressVal = addrEl ? addrEl.value.trim() : "";
 
   const payload = {
     user_id: getUserId(),
-    customer_name: $("customerName").value.trim(),
-    phone: $("phone").value.trim(),
+    customer_name: nameEl ? nameEl.value.trim() : "",
+    phone: phoneEl ? phoneEl.value.trim() : "",
     room_id: String(validRoomId),
     room_name: selectedRoom.room_name || selectedRoom.roomName || "",
     room_type: selectedRoom.room_type || selectedRoom.roomType || "",
-    check_in: $("checkin").value,
-    check_out: $("checkout").value,
-    guests: Number($("guests").value),
-    note: $("note").value.trim(),
+    check_in: checkinEl ? checkinEl.value : "",
+    check_out: checkoutEl ? checkoutEl.value : "",
+    guests: guestsEl ? Number(guestsEl.value) : 1,
+    note: noteEl ? noteEl.value.trim() : "",
     price: selectedRoom.price_per_night || selectedRoom.price || "-",
     
     need_invoice: needInvoice,
@@ -250,7 +276,11 @@ async function createBooking() {
   };
 
   try {
-    const r = await fetch(CONFIG.BOOKING_WEBHOOK, {
+    const bookingUrl = (typeof CONFIG !== 'undefined' && CONFIG.BOOKING_WEBHOOK) 
+      ? CONFIG.BOOKING_WEBHOOK 
+      : "https://sage-loon.pikapod.net/webhook/cpark-booking";
+
+    const r = await fetch(bookingUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -260,7 +290,10 @@ async function createBooking() {
       alert(data.message || "Booking failed.");
       return;
     }
-    $("bookingIdResult").innerHTML = `<p><b>Booking ID: ${escapeHtml(data.booking_id || "")}</b></p><p class="muted">Please wait for confirmation.</p>`;
+    const resultBox = document.getElementById("bookingIdResult");
+    if (resultBox) {
+      resultBox.innerHTML = `<p><b>Booking ID: ${escapeHtml(data.booking_id || "")}</b></p><p class="muted">Please wait for confirmation.</p>`;
+    }
     showPage("successPage");
   } catch (e) {
     console.error("BOOKING ERROR:", e);
