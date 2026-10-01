@@ -1,129 +1,274 @@
-// Global State Variables
-let currentLiffUserId = localStorage.getItem("line_user_id") || "";
+let profile = null;
+let selectedRoom = null;
+let rooms = [];
+let selectedBedType = '';
 
-// 1. LIFF Initialization (config.js မှ LIFF_ID ကို ယူသုံးထားပါသည်)
-document.addEventListener("DOMContentLoaded", async () => {
-  // config.js ထဲရှိ CONFIG.LIFF_ID သို့မဟုတ် LIFF_ID ကို ယူခြင်း
-  const liffId = (typeof CONFIG !== "undefined" && CONFIG.LIFF_ID) 
-                 ? CONFIG.LIFF_ID 
-                 : (typeof LIFF_ID !== "undefined" ? LIFF_ID : "");
+function $(id) {
+  return document.getElementById(id);
+}
 
-  if (typeof liff !== "undefined" && liffId) {
-    try {
-      await liff.init({ liffId: liffId });
+async function init() {
+  try {
+    if (CONFIG.LIFF_ID) {
+      await liff.init({ liffId: CONFIG.LIFF_ID });
       if (liff.isLoggedIn()) {
-        const profile = await liff.getProfile();
-        currentLiffUserId = profile.userId;
-        
-        // LocalStorage ထဲသို့ User ID ကို အမြဲတမ်း သိမ်းထားခြင်း
-        localStorage.setItem("line_user_id", currentLiffUserId);
-        console.log("LIFF User ID Saved:", currentLiffUserId);
+        profile = await liff.getProfile();
       } else {
         liff.login();
+        return;
       }
-    } catch (err) {
-      console.error("LIFF Init Error:", err);
     }
-  } else {
-    console.warn("LIFF ID or LIFF SDK not found. Using cached User ID.");
+  } catch (e) {
+    console.error("LIFF Init Error:", e);
   }
+  setDateLimits();
+}
+init();
 
-  // Event Listeners စတင်ခြင်း
-  initEventListeners();
-});
+function setDateLimits() {
+  const today = new Date();
+  const iso = today.toISOString().split("T")[0];
+  $("checkin").min = iso;
+  $("checkout").min = iso;
 
-// 2. Event Listeners Setup
-function initEventListeners() {
-  const needInvoiceCheckbox = document.getElementById("need_invoice");
-  const invoiceFields = document.getElementById("invoice_fields");
+  $("checkin").addEventListener("change", () => {
+    $("checkout").min = $("checkin").value;
+    if ($("checkout").value && $("checkout").value <= $("checkin").value) {
+      $("checkout").value = "";
+    }
+  });
+}
 
-  if (needInvoiceCheckbox && invoiceFields) {
-    needInvoiceCheckbox.addEventListener("change", (e) => {
-      invoiceFields.style.display = e.target.checked ? "block" : "none";
+function showPage(id) {
+  try {
+    document.querySelectorAll(".page").forEach((p) => {
+      p.classList.remove("active");
     });
-  }
-
-  const bookingForm = document.getElementById("booking_form") || document.querySelector("form");
-  if (bookingForm) {
-    bookingForm.addEventListener("submit", handleBookingSubmit);
-  } else {
-    const submitBtn = document.getElementById("submit_btn") || document.querySelector("button[type='submit']");
-    if (submitBtn) {
-      submitBtn.addEventListener("click", handleBookingSubmit);
+    const page = $(id);
+    if (!page) {
+      console.error("Page not found:", id);
+      alert("Page not found: " + id);
+      return;
     }
+    page.classList.add("active");
+    window.scrollTo(0, 0);
+  } catch (error) {
+    console.error("SHOW PAGE ERROR:", error);
   }
 }
 
-// 3. Form Submit Handler (Webhook Call)
-async function handleBookingSubmit(event) {
-  if (event) event.preventDefault();
+function closeLiff() {
+  if (window.liff && liff.isInClient()) liff.closeWindow();
+}
 
-  // LocalStorage မှ User ID ကို ပြန်ယူခြင်း (Page ပြန်ဖွင့်လျှင်လည်း မပျောက်ပါ)
-  const userIdToSend = currentLiffUserId || localStorage.getItem("line_user_id") || "WEB_TEST_USER";
-  const needInvoiceEl = document.getElementById("need_invoice");
-  const needInvoice = needInvoiceEl ? needInvoiceEl.checked : false;
+function getUserId() {
+  return profile?.userId || "WEB_TEST_USER";
+}
+function selectBedType(type) {
+  selectedBedType = type;
+  showPage('searchPage');
+}
+function toggleInvoiceForm() {
+  const needInvoice = $("needInvoice").checked;
+  $("invoiceFields").style.display = needInvoice ? "block" : "none";
+}
 
-  const bookingData = {
-    user_id: userIdToSend,
-    customer_name: getValueById("customer_name") || getValueById("name"),
-    phone: getValueById("phone") || getValueById("tel"),
-    room_id: getValueById("room_id") || "ROOM_01",
-    room_name: getValueById("room_name") || "-",
-    room_type: getValueById("room_type") || "-",
-    check_in: getValueById("check_in") || getValueById("checkin"),
-    check_out: getValueById("check_out") || getValueById("checkout"),
-    guests: getValueById("guests") || "1",
-    price: getValueById("price") || "-",
-    note: getValueById("note") || "-",
-    need_invoice: needInvoice,
-    company_name: needInvoice ? (getValueById("company_name") || getValueById("company")) : "",
-    tax_id: needInvoice ? (getValueById("tax_id") || getValueById("tax")) : "",
-    billing_address: needInvoice ? (getValueById("billing_address") || getValueById("address")) : ""
-  };
+// ခလုတ်နှိပ်ပါက အလုပ်လုပ်ရန် ပြန်လည်ဖြည့်သွင်းထားသော searchRooms function
+async function searchRooms() {
+  const checkin = $("checkin").value;
+  const checkout = $("checkout").value;
+  const guests = Number($("guests").value);
 
-  // Webhook URL ကို config.js မှယူမည် သို့မဟုတ် Default URL သုံးမည်
-  const webhookUrl = (typeof CONFIG !== "undefined" && CONFIG.WEBHOOK_URL) 
-    ? CONFIG.WEBHOOK_URL 
-    : "https://sage-loon.pikapod.net/webhook/cpark-booking";
+  if (!checkin || !checkout || checkout <= checkin) {
+    alert("Please select valid check-in and check-out dates.");
+    return;
+  }
+
+  $("rooms").innerHTML = "<div class='card'>Searching available rooms...</div>";
 
   try {
-    showLoading(true);
-    
-    const response = await fetch(webhookUrl, {
+    const r = await fetch(CONFIG.SEARCH_WEBHOOK, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(bookingData)
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ checkin, checkout, guests, bedType: selectedBedType }),
     });
+    const data = await r.json();
+    rooms = data.rooms || data || [];
+    if (!Array.isArray(rooms)) rooms = [];
+    renderRooms();
+  } catch (e) {
+    console.error("SEARCH ROOMS ERROR:", e);
+    $("rooms").innerHTML = "<div class='error'>Failed to search rooms. Please try again.</div>";
+  }
+}
 
-    const result = await response.json();
-    showLoading(false);
+function renderRooms() {
+  if (!rooms.length) {
+    $("rooms").innerHTML = "<div class='card'>No available rooms for these dates.</div>";
+    return;
+  }
+  $("rooms").innerHTML = rooms
+    .map(
+      (r, i) => `
+    <div class="room-card">
+      <img class="room-img" src="${escapeHtml(r.image_url || r.imageUrl || "https://via.placeholder.com/120x90?text=Room")}" onerror="this.src='https://via.placeholder.com/120x90?text=Room'">
+      <div class="grow">
+        <b>${escapeHtml(r.room_name || r.roomName || "Room")}</b>
+        <div class="muted">${escapeHtml(r.room_type || r.roomType || "")}</div>
+        <div class="price">${Number(r.price_per_night || r.price || 0).toLocaleString()} THB / night</div>
+      </div>
+      <button class="select-btn" onclick="selectRoom(${i})">Select</button>
+    </div>`
+    )
+    .join("");
+}
 
-    if (result.success) {
-      alert("Booking Successful! ID: " + (result.booking_id || ""));
-      if (typeof liff !== "undefined" && liff.isInClient()) {
-        liff.closeWindow();
-      }
-    } else {
-      alert("Booking Failed: " + (result.message || "Unknown error"));
+function selectRoom(i) {
+  try {
+    selectedRoom = rooms[i];
+    if (!selectedRoom) {
+      alert("Room information not found.");
+      return;
     }
+    const roomName = selectedRoom.room_name || selectedRoom.roomName || "Room";
+    const roomType = selectedRoom.room_type || selectedRoom.roomType || "";
+    const price = Number(selectedRoom.price_per_night || selectedRoom.price || 0).toLocaleString();
+    const checkin = $("checkin").value;
+    const checkout = $("checkout").value;
+
+    $("selectedRoomBox").innerHTML = `
+      <div class="booking-item">
+        <b>${escapeHtml(roomName)}</b>
+        ${roomType ? `<div class="muted">Room Type: ${escapeHtml(roomType)}</div>` : ""}
+        <div class="price">${price} THB / night</div>
+        <div class="muted">${escapeHtml(checkin)} → ${escapeHtml(checkout)}</div>
+      </div>`;
+    showPage("infoPage");
   } catch (error) {
-    showLoading(false);
-    console.error("Booking Submission Error:", error);
-    alert("Error submitting booking. Please check connection.");
+    console.error("SELECT ROOM ERROR:", error);
+    alert("Unable to select this room. Please try again.");
   }
 }
 
-// Helper Functions
-function getValueById(id) {
-  const el = document.getElementById(id);
-  return el ? el.value.trim() : "";
+function showConfirm() {
+  
+if (!$("customerName").value.trim() || !$("phone").value.trim()) {
+    alert("Please enter your name and phone number.");
+    return;
+  }
+
+  const needInvoice = $("needInvoice").checked;
+  let invoiceHtml = "";
+
+  if (needInvoice) {
+    invoiceHtml = `
+      <hr style="margin: 10px 0; border: 0; border-top: 1px solid #ccc;">
+      <p><b>Tax Invoice / Receipt Required</b></p>
+      <p><b>Company/Tax Name:</b> ${escapeHtml($("companyName").value || "-")}</p>
+      <p><b>Tax ID:</b> ${escapeHtml($("taxId").value || "-")}</p>
+      <p><b>Address:</b> ${escapeHtml($("billingAddress").value || "-")}</p>
+    `;
+  }
+
+  $("confirmBox").innerHTML = `
+    <b>${escapeHtml(selectedRoom.room_name || selectedRoom.roomName || "Room")}</b>
+    <p><b>Room Type:</b> ${escapeHtml(selectedRoom.room_type || selectedRoom.roomType || "-")}</p>
+    <p><b>Date:</b> ${$("checkin").value} → ${$("checkout").value}</p>
+    <p><b>Guests:</b> ${$("guests").value}</p>
+    <p><b>Name:</b> ${escapeHtml($("customerName").value)}</p>
+    <p><b>Phone:</b> ${escapeHtml($("phone").value)}</p>
+    <p><b>Note:</b> ${escapeHtml($("note").value || "-")}</p>
+    ${invoiceHtml}`;
+
+  showPage("confirmPage");
+}
+async function createBooking() {
+  if (!selectedRoom) return;
+  const validRoomId = selectedRoom.room_id || selectedRoom.roomId || selectedRoom.id || selectedRoom.room_name || "ROOM-01";
+
+  const needInvoice = $("needInvoice").checked;
+
+  const payload = {
+    user_id: getUserId(),
+    customer_name: $("customerName").value.trim(),
+    phone: $("phone").value.trim(),
+    room_id: String(validRoomId),
+    room_name: selectedRoom.room_name || selectedRoom.roomName || "",
+    room_type: selectedRoom.room_type || selectedRoom.roomType || "",
+    check_in: $("checkin").value,
+    check_out: $("checkout").value,
+    guests: Number($("guests").value),
+    note: $("note").value.trim(),
+    
+    // Invoice / Receipt အချက်အလက်များ ထည့်သွင်းခြင်း
+    need_invoice: needInvoice,
+    invoice_info: needInvoice ? {
+      company_name: $("companyName").value.trim(),
+      tax_id: $("taxId").value.trim(),
+      billing_address: $("billingAddress").value.trim()
+    } : null
+  };
+
+  try {
+    const r = await fetch(CONFIG.BOOKING_WEBHOOK, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json();
+    if (!data.success) {
+      alert(data.message || "Booking failed.");
+      return;
+    }
+    $("bookingIdResult").innerHTML = `<p><b>Booking ID: ${escapeHtml(data.booking_id || "")}</b></p><p class="muted">Please wait for confirmation.</p>`;
+    showPage("successPage");
+  } catch (e) {
+    alert("Booking failed. Please check n8n.");
+  }
 }
 
-function showLoading(isLoading) {
-  const loader = document.getElementById("loading_spinner") || document.getElementById("loader");
-  if (loader) {
-    loader.style.display = isLoading ? "block" : "none";
+async function loadBookings() {
+  $("myBookings").innerHTML = "<div class='card'>Loading...</div>";
+  try {
+    const r = await fetch(CONFIG.MY_BOOKINGS_WEBHOOK, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: getUserId() }),
+    });
+    const data = await r.json();
+    const list = data.bookings || [];
+    $("myBookings").innerHTML = list.length
+      ? list
+          .map(
+            (b) => `
+        <div class="booking-item">
+          <b>${escapeHtml(b.room_name || "Room")}</b>
+          <div class="muted">Room Type: ${escapeHtml(b.room_type || "-")}</div>
+          <div>${escapeHtml(b.check_in)} → ${escapeHtml(b.check_out)}</div>
+          <div>Guests: ${escapeHtml(String(b.guests || ""))}</div>
+          <p><span class="status">${escapeHtml(b.status || "Pending")}</span></p>
+          <div class="muted">Booking ID: ${escapeHtml(b.booking_id || "")}</div>
+        </div>`
+          )
+          .join("")
+      : "<div class='card'>No bookings found.</div>";
+  } catch (e) {
+    $("myBookings").innerHTML = "<div class='error'>Could not load bookings.</div>";
   }
+}
+
+function loadProfile() {
+  $("profile").innerHTML = profile
+    ? `<p><b>Name:</b> ${escapeHtml(profile.displayName)}</p><p><b>LINE User ID:</b> ${escapeHtml(profile.userId)}</p>`
+    : "<p>Profile is available after LINE login.</p>";
+}
+
+function escapeHtml(v) {
+  return String(v ?? "").replace(/[&<>"']/g, (m) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
+  }[m]));
 }
