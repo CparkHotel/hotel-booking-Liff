@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>C Park Hotel Booking</title>
   <link rel="stylesheet" href="./style.css">
- 
 </head>
 <body>
   <header class="topbar">
@@ -20,63 +19,58 @@
   </header>
 
   <main class="container">
-   <!-- Menu Page -->
-<section id="menuPage" class="page active">
-  <div class="welcome card">
-    <h2>Hello! 👋</h2>
-    <p>Welcome to our hotel. What would you like to do today?</p>
-  </div>
-
- <!-- Room Bed Types Quick Preview (Icon Version) -->
-<div class="card bed-types-preview">
-  <h3 style="margin-bottom: 12px; font-size: 14px; color: #666; text-align: center;">Room Bed Types</h3>
-  <div style="display: flex; justify-content: space-around; text-align: center; gap: 8px;">
-    
-    <!-- Double Room -->
-    <div onclick="selectBedType('Double')" style="cursor: pointer; flex: 1; padding: 12px 6px; border: 1px solid #e0e0e0; border-radius: 10px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
-      <div style="margin-bottom: 6px; display: flex; justify-content: center; align-items: center;">
-        <img src="./bed icon 2.png" alt="Double Bed Icon" style="width: 28px; height: 38px; object-fit: contain;">
+    <!-- Menu Page (Home) -->
+    <section id="menuPage" class="page active">
+      <div class="welcome card">
+        <h2>Hello! 👋</h2>
+        <p>Welcome to C Park Hotel.</p>
       </div>
-      <span style="font-size: 12px; font-weight: bold; display: block; color: #333;">Double</span>
-      <small style="font-size: 10px; color: #777;">1 Large Bed</small>
-    </div>
 
-    <!-- Twin Room -->
-    <div onclick="selectBedType('Twin')" style="cursor: pointer; flex: 1; padding: 12px 6px; border: 1px solid #e0e0e0; border-radius: 10px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
-      <div style="margin-bottom: 6px; display: flex; justify-content: center; align-items: center; gap: 4px;">
-        <img src="./bed icon.png" alt="Bed Icon" style="width: 22px; height: 38px; object-fit: contain;">
-        <img src="./bed icon.png" alt="Bed Icon" style="width: 22px; height: 38px; object-fit: contain;">
+      <!-- Bed Types Selection -->
+      <div class="card bed-types-preview">
+        <h3 style="margin-bottom: 12px; font-size: 14px; color: #666; text-align: center;">Select Bed Type to Book</h3>
+        <div style="display: flex; justify-content: space-around; text-align: center; gap: 8px;">
+          
+          <!-- Double Room -->
+          <div onclick="selectBedType('Double')" style="cursor: pointer; flex: 1; padding: 12px 6px; border: 1px solid #e0e0e0; border-radius: 10px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+            <div style="margin-bottom: 6px; display: flex; justify-content: center; align-items: center;">
+              <img src="./bed icon 2.png" alt="Double Bed Icon" style="width: 28px; height: 38px; object-fit: contain;">
+            </div>
+            <span style="font-size: 12px; font-weight: bold; display: block; color: #333;">Double</span>
+            <small style="font-size: 10px; color: #777;">1 Large Bed</small>
+          </div>
+
+          <!-- Twin Room -->
+          <div onclick="selectBedType('Twin')" style="cursor: pointer; flex: 1; padding: 12px 6px; border: 1px solid #e0e0e0; border-radius: 10px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+            <div style="margin-bottom: 6px; display: flex; justify-content: center; align-items: center; gap: 4px;">
+              <img src="./bed icon.png" alt="Bed Icon" style="width: 22px; height: 38px; object-fit: contain;">
+              <img src="./bed icon.png" alt="Bed Icon" style="width: 22px; height: 38px; object-fit: contain;">
+            </div>
+            <span style="font-size: 12px; font-weight: bold; display: block; color: #333;">Twin</span>
+            <small style="font-size: 10px; color: #777;">2 Single Beds</small>
+          </div>
+
+          <!-- Triple Room -->
+          <div onclick="selectBedType('Triple')" style="cursor: pointer; flex: 1; padding: 12px 6px; border: 1px solid #e0e0e0; border-radius: 10px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+            <div style="margin-bottom: 6px; display: flex; justify-content: center; align-items: center; gap: 2px;">
+              <img src="./bed icon.png" alt="Bed Icon" style="width: 18px; height: 32px; object-fit: contain;">
+              <img src="./bed icon.png" alt="Bed Icon" style="width: 18px; height: 32px; object-fit: contain;">
+              <img src="./bed icon.png" alt="Bed Icon" style="width: 18px; height: 32px; object-fit: contain;">
+            </div>
+            <span style="font-size: 12px; font-weight: bold; display: block; color: #333;">Triple</span>
+            <small style="font-size: 10px; color: #777;">3 Single Beds</small>
+          </div>
+
+        </div>
       </div>
-      <span style="font-size: 12px; font-weight: bold; display: block; color: #333;">Twin</span>
-      <small style="font-size: 10px; color: #777;">2 Single Beds</small>
-    </div>
 
-    <!-- Triple Room -->
-    <div onclick="selectBedType('Triple')" style="cursor: pointer; flex: 1; padding: 12px 6px; border: 1px solid #e0e0e0; border-radius: 10px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
-      <div style="margin-bottom: 6px; display: flex; justify-content: center; align-items: center; gap: 2px;">
-        <img src="./bed icon.png" alt="Bed Icon" style="width: 18px; height: 32px; object-fit: contain;">
-        <img src="./bed icon.png" alt="Bed Icon" style="width: 18px; height: 32px; object-fit: contain;">
-        <img src="./bed icon.png" alt="Bed Icon" style="width: 18px; height: 32px; object-fit: contain;">
+      <!-- 🟢 Home Page ပေါ်မှာတင် တန်းမြင်ရမည့် My Bookings Section -->
+      <div style="margin-top: 20px;">
+        <h3 style="font-size: 16px; margin-bottom: 10px; color: #333; display: flex; align-items: center; gap: 6px;">
+          📅 My Bookings
+        </h3>
+        <div id="myBookings"></div>
       </div>
-      <span style="font-size: 12px; font-weight: bold; display: block; color: #333;">Triple</span>
-      <small style="font-size: 10px; color: #777;">3 Single Beds</small>
-    </div>
-
-  </div> <!-- flex container ပိတ် -->
-</div> <!-- card preview ပိတ် -->
-
-  <!-- ကျန်တဲ့ Buttons များ -->
-  
-      <button class="menu-card" onclick="showPage('bookingsPage'); loadBookings()">
-        <span class="menu-icon">📅</span>
-        <span><b>My Bookings</b><small>View my bookings</small></span>
-        <span>›</span>
-      </button>
-      <button class="menu-card" onclick="showPage('profilePage'); loadProfile()">
-        <span class="menu-icon">👤</span>
-        <span><b>Profile</b><small>View my profile</small></span>
-        <span>›</span>
-      </button>
     </section>
 
     <!-- Search Page -->
@@ -109,28 +103,31 @@
       <h2>Booking Information</h2>
       <div class="card">
         <div id="selectedRoomBox"></div>
+        
         <label for="customerName">Full Name</label>
         <input id="customerName" type="text" placeholder="Enter your name" required>
 
         <label for="phone">Phone Number</label>
         <input id="phone" type="tel" placeholder="09xxxxxxxxx" required>
-         <!-- Tax / Invoice Request Option -->
-<div style="margin: 15px 0;">
-  <input type="checkbox" id="needInvoice" onchange="toggleInvoiceForm()">
-  <label for="needInvoice" style="display:inline;">Request Tax Invoice / Receipt?</label>
-</div>
 
-<!-- Invoice Form Fields (Default Hide) -->
-<div id="invoiceFields" style="display: none; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
-  <label for="companyName">Company / Tax Name</label>
-  <input id="companyName" type="text" placeholder="Company Name or Full Name">
+        <!-- Tax / Invoice Request Option -->
+        <div style="margin: 15px 0;">
+          <input type="checkbox" id="needInvoice" onchange="toggleInvoiceForm()">
+          <label for="needInvoice" style="display:inline;">Request Tax Invoice / Receipt?</label>
+        </div>
 
-  <label for="taxId">Tax ID / Id No.</label>
-  <input id="taxId" type="text" placeholder="Tax Registration No.">
+        <!-- Invoice Form Fields -->
+        <div id="invoiceFields" style="display: none; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+          <label for="companyName">Company / Tax Name</label>
+          <input id="companyName" type="text" placeholder="Company Name or Full Name">
 
-  <label for="billingAddress">Billing Address</label>
-  <textarea id="billingAddress" rows="2" placeholder="Full address for invoice"></textarea>
-</div>
+          <label for="taxId">Tax ID / Id No.</label>
+          <input id="taxId" type="text" placeholder="Tax Registration No.">
+
+          <label for="billingAddress">Billing Address</label>
+          <textarea id="billingAddress" rows="2" placeholder="Full address for invoice"></textarea>
+        </div>
+
         <label for="note">Note (Optional)</label>
         <textarea id="note" rows="3" placeholder="Special request..."></textarea>
 
@@ -152,30 +149,14 @@
         <div class="check">✓</div>
         <h2>Booking Completed!</h2>
         <p>Your booking has been successfully sent.</p>
-        <p>You can see your booking in <b>My Bookings</b>.</p>
         <div id="bookingIdResult"></div>
-        <button type="button" class="primary" onclick="showPage('bookingsPage'); loadBookings()">View My Bookings</button>
-        <button type="button" class="secondary" onclick="showPage('menuPage')">Back to Menu</button>
+        <button type="button" class="primary" onclick="showPage('menuPage'); loadBookings();">Back to Home</button>
       </div>
-    </section>
-
-    <!-- Bookings Page -->
-    <section id="bookingsPage" class="page">
-      <button class="back" onclick="showPage('menuPage')">‹ Back</button>
-      <h2>My Bookings</h2>
-      <div id="myBookings"></div>
-    </section>
-
-    <!-- Profile Page -->
-    <section id="profilePage" class="page">
-      <button class="back" onclick="showPage('menuPage')">‹ Back</button>
-      <h2>Profile</h2>
-      <div id="profile" class="card"></div>
     </section>
   </main>
 
- <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<script src="config.js"></script>
-<script src="app.js"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
