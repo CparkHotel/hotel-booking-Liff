@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     // ⚠️ Replace 'YOUR_LIFF_ID' with your actual LIFF ID if needed
     if (typeof liff !== "undefined") {
-     await liff.init({ liffId: "1657890123-AbCdEfGh" });
+     await liff.init({ liffId: "2011476453-A8K9qAG9" });
       if (liff.isLoggedIn()) {
         const profile = await liff.getProfile();
         currentLiffUserId = profile.userId;
