@@ -110,12 +110,13 @@
         <label for="phone">Phone Number</label>
         <input id="phone" type="tel" placeholder="09xxxxxxxxx" required>
 
-        <!-- Tax / Invoice Request Option -->
-        <div style="margin: 15px 0;">
-          <input type="checkbox" id="needInvoice" onchange="toggleInvoiceForm()">
-          <label for="needInvoice" style="display:inline;">Request Tax Invoice / Receipt?</label>
-        </div>
-
+       <!-- Tax / Invoice Request Option -->
+<div style="margin: 15px 0;">
+  <label for="needInvoice" style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;">
+    <input type="checkbox" id="needInvoice" onchange="toggleInvoiceForm()" style="width: 18px; height: 18px; margin: 0; cursor: pointer;">
+    <span>Request Tax Invoice / Receipt?</span>
+  </label>
+</div>
         <!-- Invoice Form Fields -->
         <div id="invoiceFields" style="display: none; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
           <label for="companyName">Company / Tax Name</label>
