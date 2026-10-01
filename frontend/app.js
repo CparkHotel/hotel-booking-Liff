@@ -7,7 +7,7 @@ function $(id) {
   return document.getElementById(id);
 }
 
-// 1. LIFF Initialization (LocalStorage ဖြင့် User ID ပျောက်မသွားအောင် သိမ်းဆည်းပေးသည်)
+// 1. LIFF Init & Safe Storage
 async function init() {
   try {
     const liffId = (typeof CONFIG !== 'undefined' && CONFIG.LIFF_ID) ? CONFIG.LIFF_ID : "";
@@ -29,7 +29,11 @@ async function init() {
   }
   setDateLimits();
 }
-init();
+
+// Global Event Listener မသုံးဘဲ Direct Init
+window.addEventListener("DOMContentLoaded", () => {
+  init();
+});
 
 function setDateLimits() {
   const today = new Date();
@@ -55,7 +59,6 @@ function showPage(id) {
     const page = $(id);
     if (!page) {
       console.error("Page not found:", id);
-      alert("Page not found: " + id);
       return;
     }
     page.classList.add("active");
@@ -69,7 +72,6 @@ function closeLiff() {
   if (window.liff && liff.isInClient()) liff.closeWindow();
 }
 
-// 🟢 LocalStorage မှပါ LINE User ID ကို ရှာဖွေပေးမည်
 function getUserId() {
   return profile?.userId || localStorage.getItem("line_user_id") || "WEB_TEST_USER";
 }
@@ -80,7 +82,7 @@ function selectBedType(type) {
 }
 
 function toggleInvoiceForm() {
-  const needInvoice = $("needInvoice").checked;
+  const needInvoice = $("needInvoice") ? $("needInvoice").checked : false;
   if ($("invoiceFields")) {
     $("invoiceFields").style.display = needInvoice ? "block" : "none";
   }
@@ -99,10 +101,7 @@ async function searchRooms() {
   $("rooms").innerHTML = "<div class='card'>Searching available rooms...</div>";
 
   try {
-    const searchUrl = (typeof CONFIG !== 'undefined' && CONFIG.SEARCH_WEBHOOK) 
-      ? CONFIG.SEARCH_WEBHOOK 
-      : "https://sage-loon.pikapod.net/webhook/cpark-search";
-
+    const searchUrl = CONFIG.SEARCH_WEBHOOK;
     const r = await fetch(searchUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -167,12 +166,16 @@ function selectRoom(i) {
 }
 
 function showConfirm() {
-  if (!$("customerName").value.trim() \vert{}\vert{} !$("phone").value.trim()) {
+  if (!selectedRoom) {
+    alert("Please select a room first.");
+    return;
+  }
+  if (!$("customerName").value.trim() || $("phone").value.trim()) {
     alert("Please enter your name and phone number.");
     return;
   }
 
-  const needInvoice = $("needInvoice").checked;
+  const needInvoice = $("needInvoice") ? $("needInvoice").checked : false;
   let invoiceHtml = "";
 
   if (needInvoice) {
@@ -199,15 +202,17 @@ function showConfirm() {
 }
 
 async function createBooking() {
-  if (!selectedRoom) return;
+  if (!selectedRoom) {
+    alert("No room selected!");
+    return;
+  }
+  
   const validRoomId = selectedRoom.room_id || selectedRoom.roomId || selectedRoom.id || selectedRoom.room_name || "ROOM-01";
-
-  const needInvoice = $("needInvoice").checked;
+  const needInvoice = $("needInvoice") ? $("needInvoice").checked : false;
   const compName = $("companyName") ? $("companyName").value.trim() : "";
   const taxIdVal = $("taxId") ? $("taxId").value.trim() : "";
   const addressVal = $("billingAddress") ? $("billingAddress").value.trim() : "";
 
-  // 🟢 Webhook ထံ သို့ Payload ပို့ပေးခြင်း (n8n ဘက်မှ Auto-fill အလုပ်လုပ်အောင် user_id မပါမဖြစ် ပို့ပါသည်)
   const payload = {
     user_id: getUserId(),
     customer_name: $("customerName").value.trim(),
@@ -234,11 +239,7 @@ async function createBooking() {
   };
 
   try {
-    const bookingUrl = (typeof CONFIG !== 'undefined' && CONFIG.BOOKING_WEBHOOK) 
-      ? CONFIG.BOOKING_WEBHOOK 
-      : "https://sage-loon.pikapod.net/webhook/cpark-booking";
-
-    const r = await fetch(bookingUrl, {
+    const r = await fetch(CONFIG.BOOKING_WEBHOOK, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -251,6 +252,7 @@ async function createBooking() {
     $("bookingIdResult").innerHTML = `<p><b>Booking ID: ${escapeHtml(data.booking_id || "")}</b></p><p class="muted">Please wait for confirmation.</p>`;
     showPage("successPage");
   } catch (e) {
+    console.error("BOOKING ERROR:", e);
     alert("Booking failed. Please check connection.");
   }
 }
@@ -258,11 +260,7 @@ async function createBooking() {
 async function loadBookings() {
   $("myBookings").innerHTML = "<div class='card'>Loading...</div>";
   try {
-    const myBookingsUrl = (typeof CONFIG !== 'undefined' && CONFIG.MY_BOOKINGS_WEBHOOK) 
-      ? CONFIG.MY_BOOKINGS_WEBHOOK 
-      : "https://sage-loon.pikapod.net/webhook/cpark-my-bookings";
-
-    const r = await fetch(myBookingsUrl, {
+    const r = await fetch(CONFIG.MY_BOOKINGS_WEBHOOK, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ user_id: getUserId() }),
@@ -285,6 +283,7 @@ async function loadBookings() {
           .join("")
       : "<div class='card'>No bookings found.</div>";
   } catch (e) {
+    console.error("LOAD BOOKINGS ERROR:", e);
     $("myBookings").innerHTML = "<div class='error'>Could not load bookings.</div>";
   }
 }
