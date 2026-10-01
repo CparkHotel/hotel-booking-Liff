@@ -13,6 +13,10 @@ async function init() {
       await liff.init({ liffId: CONFIG.LIFF_ID });
       if (liff.isLoggedIn()) {
         profile = await liff.getProfile();
+        // 🟢 User ID ကို LocalStorage ထဲတွင် အမြဲ သိမ်းဆည်းပေးခြင်း (Page ပြန်ဖွင့်လျှင် မပျောက်စေရန်)
+        if (profile && profile.userId) {
+          localStorage.setItem("line_user_id", profile.userId);
+        }
       } else {
         liff.login();
         return;
@@ -61,19 +65,21 @@ function closeLiff() {
   if (window.liff && liff.isInClient()) liff.closeWindow();
 }
 
+// 🟢 LocalStorage ထဲမှ ID ကိုပါ ပြန်ယူနိုင်အောင် ပြင်ဆင်ထားသော getUserId()
 function getUserId() {
-  return profile?.userId || "WEB_TEST_USER";
+  return profile?.userId || localStorage.getItem("line_user_id") || "WEB_TEST_USER";
 }
+
 function selectBedType(type) {
   selectedBedType = type;
   showPage('searchPage');
 }
+
 function toggleInvoiceForm() {
   const needInvoice = $("needInvoice").checked;
   $("invoiceFields").style.display = needInvoice ? "block" : "none";
 }
 
-// ခလုတ်နှိပ်ပါက အလုပ်လုပ်ရန် ပြန်လည်ဖြည့်သွင်းထားသော searchRooms function
 async function searchRooms() {
   const checkin = $("checkin").value;
   const checkout = $("checkout").value;
@@ -151,8 +157,7 @@ function selectRoom(i) {
 }
 
 function showConfirm() {
-  
-if (!$("customerName").value.trim() || !$("phone").value.trim()) {
+  if (!$("customerName").value.trim() \vert{}\vert{} !$("phone").value.trim()) {
     alert("Please enter your name and phone number.");
     return;
   }
@@ -182,12 +187,17 @@ if (!$("customerName").value.trim() || !$("phone").value.trim()) {
 
   showPage("confirmPage");
 }
+
 async function createBooking() {
   if (!selectedRoom) return;
   const validRoomId = selectedRoom.room_id || selectedRoom.roomId || selectedRoom.id || selectedRoom.room_name || "ROOM-01";
 
   const needInvoice = $("needInvoice").checked;
+  const compName = $("companyName") ? $("companyName").value.trim() : "";
+  const taxIdVal = $("taxId") ? $("taxId").value.trim() : "";
+  const addressVal = $("billingAddress") ? $("billingAddress").value.trim() : "";
 
+  // 🟢 n8n Code Node မျှော်လင့်ထားသော Payload Format အတိုင်း အပြည့်အစုံ ပို့ပေးခြင်း
   const payload = {
     user_id: getUserId(),
     customer_name: $("customerName").value.trim(),
@@ -199,13 +209,17 @@ async function createBooking() {
     check_out: $("checkout").value,
     guests: Number($("guests").value),
     note: $("note").value.trim(),
+    price: selectedRoom.price_per_night || selectedRoom.price || "-",
     
-    // Invoice / Receipt အချက်အလက်များ ထည့်သွင်းခြင်း
     need_invoice: needInvoice,
+    company_name: needInvoice ? compName : "",
+    tax_id: needInvoice ? taxIdVal : "",
+    billing_address: needInvoice ? addressVal : "",
+    
     invoice_info: needInvoice ? {
-      company_name: $("companyName").value.trim(),
-      tax_id: $("taxId").value.trim(),
-      billing_address: $("billingAddress").value.trim()
+      company_name: compName,
+      tax_id: taxIdVal,
+      billing_address: addressVal
     } : null
   };
 
@@ -260,7 +274,7 @@ async function loadBookings() {
 function loadProfile() {
   $("profile").innerHTML = profile
     ? `<p><b>Name:</b> ${escapeHtml(profile.displayName)}</p><p><b>LINE User ID:</b> ${escapeHtml(profile.userId)}</p>`
-    : "<p>Profile is available after LINE login.</p>";
+    : `<p><b>LINE User ID:</b> ${escapeHtml(getUserId())}</p>`;
 }
 
 function escapeHtml(v) {
