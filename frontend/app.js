@@ -166,11 +166,15 @@ function selectRoom(i) {
 }
 
 function showConfirm() {
-  if (!selectedRoom) {
-    alert("Please select a room first.");
-    return;
-  }
-  if (!$("customerName").value.trim() || $("phone").value.trim()) {
+  // Input Element များမှ value ကို သေချာစွာ ယူခြင်း
+  const nameInput = $("customerName");
+  const phoneInput = $("phone");
+
+  const nameVal = nameInput ? nameInput.value.trim() : "";
+  const phoneVal = phoneInput ? phoneInput.value.trim() : "";
+
+  // အမည် သို့မဟုတ် ဖုန်းနံပါတ် မရှိပါက အသိပေးရန်
+  if (!nameVal || !phoneVal) {
     alert("Please enter your name and phone number.");
     return;
   }
@@ -179,23 +183,30 @@ function showConfirm() {
   let invoiceHtml = "";
 
   if (needInvoice) {
+    const compVal = $("companyName") ? $("companyName").value : "-";
+    const taxVal = $("taxId") ? $("taxId").value : "-";
+    const addrVal = $("billingAddress") ? $("billingAddress").value : "-";
+
     invoiceHtml = `
       <hr style="margin: 10px 0; border: 0; border-top: 1px solid #ccc;">
       <p><b>Tax Invoice / Receipt Required</b></p>
-      <p><b>Company/Tax Name:</b> ${escapeHtml($("companyName").value || "-")}</p>
-      <p><b>Tax ID:</b> ${escapeHtml($("taxId").value || "-")}</p>
-      <p><b>Address:</b> ${escapeHtml($("billingAddress").value || "-")}</p>
+      <p><b>Company/Tax Name:</b> ${escapeHtml(compVal || "-")}</p>
+      <p><b>Tax ID:</b> ${escapeHtml(taxVal || "-")}</p>
+      <p><b>Address:</b> ${escapeHtml(addrVal || "-")}</p>
     `;
   }
 
+  const roomName = selectedRoom ? (selectedRoom.room_name || selectedRoom.roomName || "Room") : "Room";
+  const roomType = selectedRoom ? (selectedRoom.room_type || selectedRoom.roomType || "-") : "-";
+
   $("confirmBox").innerHTML = `
-    <b>${escapeHtml(selectedRoom.room_name || selectedRoom.roomName || "Room")}</b>
-    <p><b>Room Type:</b> ${escapeHtml(selectedRoom.room_type || selectedRoom.roomType || "-")}</p>
-    <p><b>Date:</b> ${$("checkin").value} → ${$("checkout").value}</p>
-    <p><b>Guests:</b> ${$("guests").value}</p>
-    <p><b>Name:</b> ${escapeHtml($("customerName").value)}</p>
-    <p><b>Phone:</b> ${escapeHtml($("phone").value)}</p>
-    <p><b>Note:</b> ${escapeHtml($("note").value || "-")}</p>
+    <b>${escapeHtml(roomName)}</b>
+    <p><b>Room Type:</b> ${escapeHtml(roomType)}</p>
+    <p><b>Date:</b> ${$("checkin") ? $("checkin").value : ""} → ${$("checkout") ? $("checkout").value : ""}</p>
+    <p><b>Guests:</b> ${$("guests") ? $("guests").value : ""}</p>
+    <p><b>Name:</b> ${escapeHtml(nameVal)}</p>
+    <p><b>Phone:</b> ${escapeHtml(phoneVal)}</p>
+    <p><b>Note:</b> ${escapeHtml($("note") ? $("note").value : "-")}</p>
     ${invoiceHtml}`;
 
   showPage("confirmPage");
