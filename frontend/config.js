@@ -5,4 +5,5 @@ const CONFIG = {
  SEARCH_WEBHOOK: "https://sage-loon.pikapod.net/webhook/cpark-search",
   BOOKING_WEBHOOK: "https://sage-loon.pikapod.net/webhook/cpark-booking",
   MY_BOOKINGS_WEBHOOK: "https://sage-loon.pikapod.net/webhook/cpark-my-bookings"
+  MEMBER_WEBHOOK: "https://sage-loon.pikapod.net/webhook/cpark-member" // 🟢 Member အတွက် အသစ်တိုးခြင်း
 };
