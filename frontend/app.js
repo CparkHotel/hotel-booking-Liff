@@ -18,6 +18,8 @@ async function init() {
         profile = await liff.getProfile();
         if (profile && profile.userId) {
           localStorage.setItem("line_user_id", profile.userId);
+          // 🟢 App စဖွင့်သည်နှင့် Member အလိုအလျောက် မှတ်ပုံတင်ရန် ခေါ်ဆိုခြင်း
+          registerMember();
         }
       } else {
         liff.login();
@@ -36,6 +38,25 @@ async function init() {
 window.addEventListener("DOMContentLoaded", () => {
   init();
 });
+
+// 🟢 Member အလိုအလျောက် မှတ်ပုံတင်ရန် Function အသစ်
+async function registerMember() {
+  if (!profile || !profile.userId) return;
+
+  try {
+    await fetch(CONFIG.MEMBER_WEBHOOK, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: profile.userId,
+        display_name: profile.displayName || "Member",
+        action: "auto_register"
+      }),
+    });
+  } catch (e) {
+    console.error("Member Register Error:", e);
+  }
+}
 
 function setDateLimits() {
   const today = new Date();
@@ -159,9 +180,43 @@ function selectRoom(i) {
         <div class="muted">${escapeHtml(checkin)} → ${escapeHtml(checkout)}</div>
       </div>`;
     showPage("infoPage");
+    
+    // 🟢 အရင်က သိမ်းဆည်းထားသော နာမည်၊ ဖုန်းနှင့် Tax Invoice အချက်အလက်များကို အလိုအလျောက် ထည့်ပေးခြင်း
+    loadSavedMemberInfo();
   } catch (error) {
     console.error("SELECT ROOM ERROR:", error);
     alert("Unable to select this room. Please try again.");
+  }
+}
+
+// 🟢 Auto-fill အတွက် အချက်အလက်များ ပြန်ဖြည့်ပေးသည့် Function အသစ်
+function loadSavedMemberInfo() {
+  const savedName = localStorage.getItem("saved_customer_name");
+  const savedPhone = localStorage.getItem("saved_phone");
+
+  if (savedName && document.getElementById("customerName")) {
+    document.getElementById("customerName").value = savedName;
+  }
+  if (savedPhone && document.getElementById("phone")) {
+    document.getElementById("phone").value = savedPhone;
+  }
+
+  const savedNeedInvoice = localStorage.getItem("saved_need_invoice");
+  if (savedNeedInvoice === "true") {
+    const needInvoiceEl = document.getElementById("needInvoice");
+    if (needInvoiceEl) {
+      needInvoiceEl.checked = true;
+      toggleInvoiceForm();
+    }
+    if (document.getElementById("companyName")) {
+      document.getElementById("companyName").value = localStorage.getItem("saved_company_name") || "";
+    }
+    if (document.getElementById("taxId")) {
+      document.getElementById("taxId").value = localStorage.getItem("saved_tax_id") || "";
+    }
+    if (document.getElementById("billingAddress")) {
+      document.getElementById("billingAddress").value = localStorage.getItem("saved_billing_address") || "";
+    }
   }
 }
 
@@ -247,6 +302,19 @@ async function createBooking() {
   const compName = compEl ? compEl.value.trim() : "";
   const taxIdVal = taxEl ? taxEl.value.trim() : "";
   const addressVal = addrEl ? addrEl.value.trim() : "";
+
+  // 🟢 ဧည့်သည်၏ အချက်အလက်များနှင့် Tax Invoice အချက်အလက်များကို localStorage တွင် သိမ်းဆည်းရန်
+  localStorage.setItem("saved_customer_name", nameEl ? nameEl.value.trim() : "");
+  localStorage.setItem("saved_phone", phoneEl ? phoneEl.value.trim() : "");
+
+  if (needInvoice) {
+    localStorage.setItem("saved_need_invoice", "true");
+    localStorage.setItem("saved_company_name", compName);
+    localStorage.setItem("saved_tax_id", taxIdVal);
+    localStorage.setItem("saved_billing_address", addressVal);
+  } else {
+    localStorage.setItem("saved_need_invoice", "false");
+  }
 
   const payload = {
     user_id: getUserId(),
