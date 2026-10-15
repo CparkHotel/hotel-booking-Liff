@@ -107,34 +107,48 @@ function renderBookingList(bookings) {
 
   listEl.innerHTML = `
     <table class="admin-table">
-      <thead>
-        <tr>
-          <th>Booking ID</th>
-          <th>Customer</th>
-          <th>Phone</th>
-          <th>Room</th>
-          <th>Dates</th>
-          <th>Status</th>
-        </tr>
-      </thead>
+  <thead>
+    <tr>
+      <th>Booking ID</th>
+      <th>Customer</th>
+      <th>Phone</th>
+      <th>Room</th>
+      <th>Dates</th>
+      <th>Status</th>
+      <th>Tax Invoice</th>
+    </tr>
+  </thead>
       <tbody>
-        ${bookings
-          .map(
-            (b) => `
-          <tr>
-            <td><b>${escapeHtml(b.booking_id || b.id || "-")}</b></td>
-            <td>${escapeHtml(b.customer_name || "-")}</td>
-            <td>${escapeHtml(b.phone || "-")}</td>
-            <td>${escapeHtml(b.room_name || b.room_id || "-")}</td>
-            <td>${escapeHtml(b.check_in || "")} → ${escapeHtml(b.check_out || "")}</td>
-            <td>
-              <span class="status-pill ${b.status === "Confirmed" ? "confirmed" : "pending"}">
-                ${escapeHtml(b.status || "Pending")}
-              </span>
-            </td>
-          </tr>`
-          )
-          .join("")}
+       // renderBookingList function ထဲရှိ .map() ထဲတွင် အောက်ပါအတိုင်း ဖြည့်စွက်ပါ
+${bookings.map((b) => {
+  const needInvoice = b["Need Invoice"] === "YES" || b.need_invoice === true;
+  let invoiceDetails = "-";
+  
+  if (needInvoice) {
+    invoiceDetails = `
+      <div style="font-size: 11px; background: #f8f9fa; padding: 4px; border-radius: 4px; border-left: 2px solid #28a745;">
+        <b>Co:</b> ${escapeHtml(b["Company Name"] || b.company_name || "-")}<br>
+        <b>Tax ID:</b> ${escapeHtml(b["Tax ID"] || b.tax_id || "-")}<br>
+        <b>Addr:</b> ${escapeHtml(b["Billing Address"] || b.billing_address || "-")}
+      </div>
+    `;
+  }
+
+  return `
+    <tr>
+      <td><b>${escapeHtml(b.booking_id || b.id || "-")}</b></td>
+      <td>${escapeHtml(b.customer_name || "-")}</td>
+      <td>${escapeHtml(b.phone || "-")}</td>
+      <td>${escapeHtml(b.room_name || b.room_id || "-")}</td>
+      <td>${escapeHtml(b.check_in || "")} → ${escapeHtml(b.check_out || "")}</td>
+      <td>
+        <span class="status-pill ${b.status === "Confirmed" ? "confirmed" : "pending"}">
+          ${escapeHtml(b.status || "Pending")}
+        </span>
+      </td>
+      <td>${invoiceDetails}</td> <!-- 🟢 ဤနေရာတွင် Tax Invoice Data ပေါ်လာမည် -->
+    </tr>`;
+}).join("")}
       </tbody>
     </table>`;
 }
