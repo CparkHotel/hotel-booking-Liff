@@ -120,18 +120,20 @@ function renderBookingList(bookings) {
   </thead>
       <tbody>
 ${bookings.map((b) => {
-  const needInvoice = b["Need Invoice"] === "YES" || b.need_invoice === true;
-  let invoiceDetails = "-";
-  
-  if (needInvoice) {
-    invoiceDetails = `
-      <div style="font-size: 11px; background: #f8f9fa; padding: 4px; border-radius: 4px; border-left: 2px solid #28a745;">
-        <b>Co:</b> ${escapeHtml(b["Company Name"] || b.company_name || "-")}<br>
-        <b>Tax ID:</b> ${escapeHtml(b["Tax ID"] || b.tax_id || "-")}<br>
-        <b>Addr:</b> ${escapeHtml(b["Billing Address"] || b.billing_address || "-")}
-      </div>
-    `;
-  }
+          const rawInvoice = String(b["Need Invoice"] || b.need_invoice || "").trim().toUpperCase();
+          const needInvoice = rawInvoice === "YES" || rawInvoice === "TRUE";
+          
+          let invoiceDetails = "-";
+          
+          if (needInvoice) {
+            invoiceDetails = `
+              <div style="font-size: 11px; background: #f8f9fa; padding: 4px; border-radius: 4px; border-left: 2px solid #28a745;">
+                <b>Co:</b> ${escapeHtml(b["Company Name"] || b.company_name || "-")}<br>
+                <b>Tax ID:</b> ${escapeHtml(b["Tax ID"] || b.tax_id || "-")}<br>
+                <b>Addr:</b> ${escapeHtml(b["Billing Address"] || b.billing_address || "-")}
+              </div>
+            `;
+          }
 
   return `
     <tr>
