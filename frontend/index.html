@@ -118,16 +118,26 @@
   </label>
 </div>
         <!-- Invoice Form Fields -->
-        <div id="invoiceFields" style="display: none; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
-          <label for="companyName">Company / Tax Name</label>
-          <input id="companyName" type="text" placeholder="Company Name or Full Name">
+        <div id="invoiceFields" style="display: none;">
+  <div class="form-group">
+    <label>Company / Tax Name</label>
+    <input type="text" id="companyName" placeholder="Enter Company Name">
+  </div>
+  <div class="form-group">
+    <label>Tax ID</label>
+    <input type="text" id="taxId" placeholder="Enter Tax ID">
+  </div>
+  <!-- 🟢 Branch ID ထပ်တိုးထည့်သွင်းခြင်း -->
+  <div class="form-group">
+    <label>Branch ID Of Company</label>
+    <input type="text" id="branchId" placeholder="e.g. 00000 (Head Office) or 00001">
+  </div>
+  <div class="form-group">
+    <label>Billing Address</label>
+    <textarea id="billingAddress" placeholder="Enter Billing Address"></textarea>
+  </div>
+</div>
 
-          <label for="taxId">Tax ID / Id No.</label>
-          <input id="taxId" type="text" placeholder="Tax Registration No.">
-
-          <label for="billingAddress">Billing Address</label>
-          <textarea id="billingAddress" rows="2" placeholder="Full address for invoice"></textarea>
-        </div>
 
         <label for="note">Note (Optional)</label>
         <textarea id="note" rows="3" placeholder="Special request..."></textarea>
