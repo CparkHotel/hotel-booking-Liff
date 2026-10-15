@@ -181,7 +181,6 @@ function selectRoom(i) {
       </div>`;
     showPage("infoPage");
     
-    // 🟢 အရင်က သိမ်းဆည်းထားသော နာမည်၊ ဖုန်းနှင့် Tax Invoice အချက်အလက်များကို အလိုအလျောက် ထည့်ပေးခြင်း
     loadSavedMemberInfo();
   } catch (error) {
     console.error("SELECT ROOM ERROR:", error);
@@ -189,7 +188,6 @@ function selectRoom(i) {
   }
 }
 
-// 🟢 Auto-fill အတွက် အချက်အလက်များ ပြန်ဖြည့်ပေးသည့် Function အသစ်
 function loadSavedMemberInfo() {
   const savedName = localStorage.getItem("saved_customer_name");
   const savedPhone = localStorage.getItem("saved_phone");
@@ -303,7 +301,6 @@ async function createBooking() {
   const taxIdVal = taxEl ? taxEl.value.trim() : "";
   const addressVal = addrEl ? addrEl.value.trim() : "";
 
-  // 🟢 ဧည့်သည်၏ အချက်အလက်များနှင့် Tax Invoice အချက်အလက်များကို localStorage တွင် သိမ်းဆည်းရန်
   localStorage.setItem("saved_customer_name", nameEl ? nameEl.value.trim() : "");
   localStorage.setItem("saved_phone", phoneEl ? phoneEl.value.trim() : "");
 
@@ -358,7 +355,6 @@ async function createBooking() {
       resultBox.innerHTML = `<p><b>Booking ID: ${escapeHtml(data.booking_id || "")}</b></p><p class="muted">Please wait for confirmation.</p>`;
     }
     
-    // Booking တင်ပြီးပါက My Bookings စာရင်းကို အလိုအလျောက် Update ပြန်လုပ်ပေးမည်
     loadBookings();
     showPage("successPage");
   } catch (e) {
