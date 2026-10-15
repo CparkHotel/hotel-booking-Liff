@@ -142,7 +142,7 @@ function renderBookingList(bookings) {
               <td>${escapeHtml(b.customer_name || "-")}</td>
               <td>${escapeHtml(b.phone || "-")}</td>
               <td>${escapeHtml(b.room_name || b.room_id || "-")}</td>
-              <td>${escapeHtml(b.check_in \vert{}\vert{} "")} → ${escapeHtml(b.check_out || "")}</td>
+              <td>${escapeHtml(b.check_in || "")} → ${escapeHtml(b.check_out || "")}</td>
               <td>
                 <span class="status-pill ${b.status === "Confirmed" ? "confirmed" : "pending"}">
                   ${escapeHtml(b.status || "Pending")}
