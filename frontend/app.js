@@ -284,6 +284,14 @@ async function createBooking() {
     return;
   }
 
+  // 🟢 Loading စတင်ပြသခြင်း (Button ကို Disable လုပ်မည်)
+  const bookBtn = document.getElementById("bookNowBtn") || document.querySelector(".select-btn, button[onclick*='createBooking']");
+  if (bookBtn) {
+    bookBtn.disabled = true;
+    bookBtn.style.opacity = "0.7";
+    bookBtn.innerText = "Processing Booking...";
+  }
+
   const nameEl = document.getElementById("customerName");
   const phoneEl = document.getElementById("phone");
   const checkinEl = document.getElementById("checkin");
@@ -353,10 +361,18 @@ async function createBooking() {
       body: JSON.stringify(payload),
     });
     const data = await r.json();
+    
     if (!data.success) {
       alert(data.message || "Booking failed.");
+      // 🟢 Error ဖြစ်ပါက ခလုတ်ကို မူလအနေအထားသို့ ပြန်ပြောင်းမည်
+      if (bookBtn) {
+        bookBtn.disabled = false;
+        bookBtn.style.opacity = "1";
+        bookBtn.innerText = "BOOK NOW";
+      }
       return;
     }
+
     const resultBox = document.getElementById("bookingIdResult");
     if (resultBox) {
       resultBox.innerHTML = `<p><b>Booking ID: ${escapeHtml(data.booking_id || "")}</b></p><p class="muted">Please wait for confirmation.</p>`;
@@ -367,8 +383,16 @@ async function createBooking() {
   } catch (e) {
     console.error("BOOKING ERROR:", e);
     alert("Booking failed. Please check connection.");
+  } finally {
+    // 🟢 အလုပ်ပြီးဆုံးပါက (အောင်မြင်သည်ဖြစ်စေ၊ မအောင်မြင်သည်ဖြစ်စေ) ခလုတ်ကို ပြန်ပြင်မည်
+    if (bookBtn) {
+      bookBtn.disabled = false;
+      bookBtn.style.opacity = "1";
+      bookBtn.innerText = "BOOK NOW";
+    }
   }
 }
+
 
 async function loadBookings() {
   const container = $("myBookings");
