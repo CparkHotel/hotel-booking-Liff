@@ -208,6 +208,9 @@ function loadSavedMemberInfo() {
     if (document.getElementById("taxId")) {
       document.getElementById("taxId").value = localStorage.getItem("saved_tax_id") || "";
     }
+    if (document.getElementById("branchId")) {
+      document.getElementById("branchId").value = localStorage.getItem("saved_branch_id") || "00000";
+    }
     if (document.getElementById("billingAddress")) {
       document.getElementById("billingAddress").value = localStorage.getItem("saved_billing_address") || "";
     }
@@ -233,10 +236,12 @@ function showConfirm() {
   if (needInvoice) {
     const compEl = document.getElementById("companyName");
     const taxEl = document.getElementById("taxId");
+    const branchEl = document.getElementById("branchId");
     const addrEl = document.getElementById("billingAddress");
 
     const compVal = compEl ? compEl.value.trim() : "-";
     const taxVal = taxEl ? taxEl.value.trim() : "-";
+    const branchVal = branchEl ? branchEl.value.trim() : "00000";
     const addrVal = addrEl ? addrEl.value.trim() : "-";
 
     invoiceHtml = `
@@ -244,6 +249,7 @@ function showConfirm() {
       <p><b>Tax Invoice / Receipt Required</b></p>
       <p><b>Company/Tax Name:</b> ${escapeHtml(compVal || "-")}</p>
       <p><b>Tax ID:</b> ${escapeHtml(taxVal || "-")}</p>
+      <p><b>Branch ID:</b> ${escapeHtml(branchVal || "00000")}</p>
       <p><b>Address:</b> ${escapeHtml(addrVal || "-")}</p>
     `;
   }
@@ -291,10 +297,12 @@ async function createBooking() {
 
   const compEl = document.getElementById("companyName");
   const taxEl = document.getElementById("taxId");
+  const branchEl = document.getElementById("branchId");
   const addrEl = document.getElementById("billingAddress");
 
   const compName = compEl ? compEl.value.trim() : "";
   const taxIdVal = taxEl ? taxEl.value.trim() : "";
+  const branchIdVal = branchEl ? branchEl.value.trim() : "00000";
   const addressVal = addrEl ? addrEl.value.trim() : "";
 
   localStorage.setItem("saved_customer_name", nameEl ? nameEl.value.trim() : "");
@@ -304,6 +312,7 @@ async function createBooking() {
     localStorage.setItem("saved_need_invoice", "true");
     localStorage.setItem("saved_company_name", compName);
     localStorage.setItem("saved_tax_id", taxIdVal);
+    localStorage.setItem("saved_branch_id", branchIdVal);
     localStorage.setItem("saved_billing_address", addressVal);
   } else {
     localStorage.setItem("saved_need_invoice", "false");
@@ -325,11 +334,13 @@ async function createBooking() {
     need_invoice: needInvoice,
     company_name: needInvoice ? compName : "",
     tax_id: needInvoice ? taxIdVal : "",
+    branch_id: needInvoice ? branchIdVal : "",
     billing_address: needInvoice ? addressVal : "",
     
     invoice_info: needInvoice ? {
       company_name: compName,
       tax_id: taxIdVal,
+      branch_id: branchIdVal,
       billing_address: addressVal
     } : null
   };
