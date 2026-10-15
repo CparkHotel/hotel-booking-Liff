@@ -119,7 +119,6 @@ function renderBookingList(bookings) {
     </tr>
   </thead>
       <tbody>
-       // renderBookingList function ထဲရှိ .map() ထဲတွင် အောက်ပါအတိုင်း ဖြည့်စွက်ပါ
 ${bookings.map((b) => {
   const needInvoice = b["Need Invoice"] === "YES" || b.need_invoice === true;
   let invoiceDetails = "-";
