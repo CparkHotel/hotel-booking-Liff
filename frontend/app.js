@@ -18,7 +18,6 @@ async function init() {
         profile = await liff.getProfile();
         if (profile && profile.userId) {
           localStorage.setItem("line_user_id", profile.userId);
-          // 🟢 App စဖွင့်သည်နှင့် Member အလိုအလျောက် မှတ်ပုံတင်ရန် ခေါ်ဆိုခြင်း
           registerMember();
         }
       } else {
@@ -30,8 +29,6 @@ async function init() {
     console.error("LIFF Init Error:", e);
   }
   setDateLimits();
-  
-  // 🟢 App စဖွင့်တာနဲ့ Home Page ပေါ်မှာ Booking စာရင်း တန်းဖတ်ပေးမည်
   loadBookings();
 }
 
@@ -39,7 +36,6 @@ window.addEventListener("DOMContentLoaded", () => {
   init();
 });
 
-// 🟢 Member အလိုအလျောက် မှတ်ပုံတင်ရန် Function အသစ်
 async function registerMember() {
   if (!profile || !profile.userId) return;
 
