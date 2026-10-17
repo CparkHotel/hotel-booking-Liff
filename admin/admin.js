@@ -127,7 +127,7 @@ function renderBookingList(bookings) {
           
           if (needInvoice) {
             invoiceDetails = `
-              <div style="font-size: 11px; background: #f8f9fa; padding: 4px 6px; border-radius: 4px; border-left: 2px solid #28a745; line-height: 1.4;">
+              <div style="font-size: 11px; background: #f8f9fa; padding: 4px; border-radius: 4px; border-left: 2px solid #28a745;">
                 <b>Co:</b> ${escapeHtml(b["Company Name"] || b.company_name || "-")}<br>
                 <b>Tax ID:</b> ${escapeHtml(b["Tax ID"] || b.tax_id || "-")}<br>
                 <b>Branch ID:</b> ${escapeHtml(b["Branch ID"] || b.branch_id || "00000")}<br>
